@@ -21,7 +21,6 @@ public class DNA : MonoBehaviour
         meshRenderer = GetComponent<MeshRenderer>();
         SetSize();
         SetColor();
-        DieNaturally();
     }
 
     // Sets creature size
@@ -37,19 +36,7 @@ public class DNA : MonoBehaviour
     }
 
     // Checks if creature is healthy
-    public bool isHealthy() => health > 0;
-
-    // Destroys creature at the end of its life span
-    public void DieNaturally()
-    {
-        Destroy(gameObject, timeToLive);
-    }
-
-    // Destroys creature
-    public void Die()
-    {
-        Destroy(gameObject);
-    }
+    public bool isHealthy() => health > 0; // TODO: use health for something
 }
 
 // Enum representing different shapes

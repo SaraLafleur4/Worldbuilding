@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,17 +9,73 @@ public class PopulationManager : MonoBehaviour
     public GameObject spherePrefab;
     public GameObject capsulePrefab;
 
-    public int populationSize = 20;
+    public int populationSize = 10;
     public List<GameObject> population;
 
     public float mutationRate = 0.01f;
     public int generation = 0;
+
+    private Coroutine breedingCoroutine;
+
+    // Start the coroutine to repeatedly breed new generations
+    public void StartBreeding()
+    {
+        breedingCoroutine = StartCoroutine(BreedingCycle());
+
+        Debug.Log("Breeding Started!");
+    }
+
+    private IEnumerator BreedingCycle()
+    {
+        while (true)
+        {
+            BreedNewGeneration();
+            yield return new WaitForSeconds(3f);
+        }
+    }
+
+    // Stop the coroutine if needed
+    public void StopBreeding()
+    {
+        if (breedingCoroutine != null)
+        {
+            StopCoroutine(breedingCoroutine);
+            breedingCoroutine = null;
+
+            Debug.Log($"Breeding Stopped after {generation} generations!");
+        }
+    }
 
     // Initializes the population list and create the first generation
     public void Initialize()
     {
         population = new List<GameObject>();
         InitializePopulation();
+
+        StartBreeding();
+    }
+
+    // Updates for each frame
+    private void Update()
+    {
+        // Update population by removing dead creatures
+        for (int i = population.Count - 1; i >= 0; i--)
+        {
+            DNA dna = population[i].GetComponent<DNA>();
+            dna.timeToLive -= Time.deltaTime;
+
+            if (dna.timeToLive <= 0)
+            {
+                Destroy(population[i]);
+                population.RemoveAt(i);
+                populationSize--;
+            }
+        }
+
+        if (populationSize >= 300)
+        {
+            StopBreeding();
+        }
     }
 
     // Creates the initial population of creatures with random genes
@@ -38,8 +95,8 @@ public class PopulationManager : MonoBehaviour
             dna.red = Random.Range(0.0f, 1.0f);
             dna.green = Random.Range(0.0f, 1.0f);
             dna.blue = Random.Range(0.0f, 1.0f);
-            dna.health = (uint)Random.Range(1.0f, 10.0f);
-            dna.timeToLive = Random.Range(3.0f, 10.0f);
+            dna.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
+            dna.timeToLive = Random.Range(5.0f, 30.0f);
 
             // Evaluate the fitness of the newly created creature
             EvaluateFitness(creature);
@@ -50,30 +107,37 @@ public class PopulationManager : MonoBehaviour
     }
 
     // Breeds a new population from the current population
-    public void BreedNewPopulation()
+    public void BreedNewGeneration()
     {
-        List<GameObject> newPopulation = new List<GameObject>();
+        Debug.Log($"Breed! - current population size = {populationSize}");
 
         // Check if population is non-empty before breeding
         if (population.Count == 0)
         {
             Debug.LogError("Population is empty. Cannot breed new population.");
+            StopBreeding();
             return;
         }
 
+        // Reset possible parents' list
+        List<GameObject> possibleParents = GetPossibleParentsList();
+        Debug.Log($"{possibleParents.Count} possible parents.");
+
         // Generate a new population by breeding pairs of creatures
-        for (int i = 0; i < populationSize; i += 2)
+        for (int i = 0; i < possibleParents.Count; i += 2)
         {
             // Select two parents based on their fitness
-            GameObject parent1 = SelectParent(population);
-            GameObject parent2 = SelectParent(population);
+            GameObject parent1 = SelectParent(possibleParents);
+            GameObject parent2 = SelectParent(possibleParents);
 
             // Check for valid parent selection before breeding
             if (parent1 != null && parent2 != null)
             {
                 // Breed the two parents to produce offspring
-                newPopulation.Add(Breed(parent1, parent2));
-                newPopulation.Add(Breed(parent2, parent1));
+                population.Add(Breed(parent1, parent2));
+                populationSize++;
+                population.Add(Breed(parent2, parent1));
+                populationSize++;
             }
             else
             {
@@ -81,26 +145,36 @@ public class PopulationManager : MonoBehaviour
             }
         }
 
-        // Destroy the old population before replacing it
-        for (int i = 0; i < population.Count; i++)
+        generation++;
+    }
+
+    // Gets list of possible parents on creature's timeToLive
+    public List<GameObject> GetPossibleParentsList()
+    {
+        List<GameObject> possibleParents = new List<GameObject>();
+
+        foreach (var creature in population)
         {
-            Destroy(population[i]);
+            float timeToLive = creature.GetComponent<DNA>().timeToLive; // TODO: should depend on health
+
+            if (timeToLive > 15)
+            {
+                possibleParents.Add(creature);
+            }
         }
 
-        // Replace the old population with the new population and move to the next generation
-        population = newPopulation;
-        generation++;
+        return possibleParents;
     }
 
     // Selects a parent based on weighted random selection, favoring creatures with higher fitness
     // /!\ PARENT SELECTION SHOULD BEE UPDATED LATER ON /!\
-    GameObject SelectParent(List<GameObject> population)
+    GameObject SelectParent(List<GameObject> possibleParents)
     {
         // List to hold fitness weights for selection
         List<int> weights = new List<int>();
 
         // Assign weights based on fitness levels
-        foreach (var creature in population)
+        foreach (var creature in possibleParents)
         {
             FitnessLevel fitness = creature.GetComponent<DNA>().fitnessLevel;
 
@@ -128,7 +202,7 @@ public class PopulationManager : MonoBehaviour
         if (totalWeight == 0)
         {
             Debug.LogError("Total weight is zero. Check if all creatures have been assigned a valid fitness level.");
-            return population[0];
+            return possibleParents[0];
         }
 
         // Select a random value between 0 and totalWeight
@@ -136,20 +210,20 @@ public class PopulationManager : MonoBehaviour
 
         // Iterate over the population to find the parent based on cumulative weight
         int currentSum = 0;
-        for (int i = 0; i < population.Count; i++)
+        for (int i = 0; i < possibleParents.Count; i++)
         {
             currentSum += weights[i];
 
             // Return the selected parent when the random value falls within the current sum
             if (randomPick < currentSum)
             {
-                return population[i];
+                return possibleParents[i];
             }
         }
 
         // Fallback in case of an issue (this should not be reached)
         Debug.LogWarning("Fallback reached in SelectParent method. Returning the last creature.");
-        return population[population.Count - 1];
+        return possibleParents[possibleParents.Count - 1];
     }
 
 
@@ -163,7 +237,8 @@ public class PopulationManager : MonoBehaviour
         // Create a new offspring
         Shape newCreatureShape = Random.Range(0, 10) < 5 ? dna1.shape : dna2.shape;
         GameObject prefab = GetPrefabByName(newCreatureShape);
-        Vector3 position = GetNewCreaturePosition(parent1.transform.localPosition, parent2.transform.localPosition);
+        Vector3 position = GetRandomPosition(); // TODO: change this, but for now we can see something ;)
+        // Vector3 position = GetNewCreaturePosition(parent1.transform.localPosition, parent2.transform.localPosition);
 
         GameObject offspring = Instantiate(prefab, position, Quaternion.identity);
 
@@ -175,13 +250,14 @@ public class PopulationManager : MonoBehaviour
         offspringDNA.red = Random.Range(0, 10) < 5 ? dna1.red : dna2.red;
         offspringDNA.green = Random.Range(0, 10) < 5 ? dna1.green : dna2.green;
         offspringDNA.blue = Random.Range(0, 10) < 5 ? dna1.blue : dna2.blue;
-        offspringDNA.health = Random.Range(0, 10) < 5 ? dna1.health : dna2.health;
-        offspringDNA.timeToLive = Random.Range(0, 10) < 5 ? dna1.timeToLive : dna2.timeToLive;
+        // NO Crossover: random health and life span
+        offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
+        offspringDNA.timeToLive = Random.Range(5.0f, 30.0f);
 
         // Apply random mutation based on the mutation rate
         if (Random.Range(0.0f, 1.0f) < mutationRate)
         {
-            offspringDNA.size = Random.Range(0.0f, 1.0f);
+            offspringDNA.size = Random.Range(0.0f, 5.0f);
 
             offspringDNA.red = Random.Range(0.0f, 1.0f);
             offspringDNA.green = Random.Range(0.0f, 1.0f);
@@ -201,7 +277,7 @@ public class PopulationManager : MonoBehaviour
         DNA dna = creature.GetComponent<DNA>();
 
         // Simple fitness function based on a single gene
-        if (dna.blue >= 0.6f || dna.shape == Shape.Cube)
+        if (dna.blue >= 0.6f && dna.shape == Shape.Cube)
         {
             dna.fitnessLevel = FitnessLevel.Best;
         }
@@ -209,7 +285,7 @@ public class PopulationManager : MonoBehaviour
         {
             dna.fitnessLevel = FitnessLevel.Good;
         }
-        else if ((dna.blue >= 0.1f && dna.blue < 0.3f) || dna.shape == Shape.Capsule)
+        else if (dna.blue >= 0.1f && dna.blue < 0.3f && dna.shape == Shape.Sphere)
         {
             dna.fitnessLevel = FitnessLevel.NotBad;
         }
@@ -224,7 +300,7 @@ public class PopulationManager : MonoBehaviour
     // Gets random position
     private Vector3 GetRandomPosition()
     {
-        return new Vector3(Random.Range(-8, 8), Random.Range(0.0f, 0.8f), Random.Range(0.0f, 10.0f));
+        return new Vector3(Random.Range(-12, 12), Random.Range(0.0f, 0.8f), Random.Range(0.0f, 30.0f));
     }
 
     // Gets random prefab
