@@ -4,16 +4,19 @@ using UnityEngine;
 
 public class PopulationManager : MonoBehaviour
 {
-    public GameObject creaturePrefab;     // Prefab for creature (GameObject) creations (which contain DNA)
-    public int populationSize = 20;         // Size of the population for each generation
-    public List<GameObject> population;     // List to hold the current population of creatures
-    public float mutationRate = 0.01f;      // Mutation rate - chance that an offspring's DNA will mutate
-    public int generation = 0;              // Tracks which generation we are currently in
+    public GameObject cubePrefab;
+    public GameObject spherePrefab;
+    public GameObject capsulePrefab;
 
-    // Called when the script starts
-    private void Start()
+    public int populationSize = 20;
+    public List<GameObject> population;
+
+    public float mutationRate = 0.01f;
+    public int generation = 0;
+
+    // Initializes the population list and create the first generation
+    public void Initialize()
     {
-        // Initialize the population list and create the first generation
         population = new List<GameObject>();
         InitializePopulation();
     }
@@ -23,16 +26,20 @@ public class PopulationManager : MonoBehaviour
     {
         for (int i = 0; i < populationSize; i++)
         {
-            // Set a random position for the creature
-            Vector3 position = new Vector3(Random.Range(-8, 8), Random.Range(-2.5f, 5.5f), 0);
-            // Instantiate the creature prefab
-            GameObject creature = Instantiate(creaturePrefab, position, Quaternion.identity);
+            // Instantiate the creature with prefab and position
+            GameObject prefab = GetRandomPrefab();
+            Vector3 position = GetRandomPosition();
+            GameObject creature = Instantiate(prefab, position, Quaternion.identity);
 
-            // Randomize the genes (color components) for the creature
+            // Randomize the creature's genes
             DNA dna = creature.GetComponent<DNA>();
-            dna.one = Random.Range(0.0f, 1.0f);
-            dna.two = Random.Range(0.0f, 1.0f);
-            dna.three = Random.Range(0.0f, 1.0f);
+            dna.shape = GetNameByPrefab(prefab);
+            dna.size = Random.Range(0.0f, 1.0f);
+            dna.red = Random.Range(0.0f, 1.0f);
+            dna.green = Random.Range(0.0f, 1.0f);
+            dna.blue = Random.Range(0.0f, 1.0f);
+            dna.health = (uint)Random.Range(1.0f, 10.0f);
+            dna.timeToLive = Random.Range(3.0f, 10.0f);
 
             // Evaluate the fitness of the newly created creature
             EvaluateFitness(creature);
@@ -149,27 +156,36 @@ public class PopulationManager : MonoBehaviour
     // Breeds two creatures to create offspring with a mix of parent genes
     private GameObject Breed(GameObject parent1, GameObject parent2)
     {
-        // Set random position for the offspring
-        Vector3 position = new Vector3(Random.Range(-8, 8), Random.Range(-2.5f, 5.5f), 0);
-        // Create a new offspring by instantiating the prefab
-        GameObject offspring = Instantiate(creaturePrefab, position, Quaternion.identity);
-
         // Get the DNA of both parents
         DNA dna1 = parent1.GetComponent<DNA>();
         DNA dna2 = parent2.GetComponent<DNA>();
+
+        // Create a new offspring
+        Shape newCreatureShape = Random.Range(0, 10) < 5 ? dna1.shape : dna2.shape;
+        GameObject prefab = GetPrefabByName(newCreatureShape);
+        Vector3 position = GetNewCreaturePosition(parent1.transform.localPosition, parent2.transform.localPosition);
+
+        GameObject offspring = Instantiate(prefab, position, Quaternion.identity);
+
         DNA offspringDNA = offspring.GetComponent<DNA>();
 
         // Crossover: randomly choose genes from either parent
-        offspringDNA.one = Random.Range(0, 10) < 5 ? dna1.one : dna2.one;
-        offspringDNA.two = Random.Range(0, 10) < 5 ? dna1.two : dna2.two;
-        offspringDNA.three = Random.Range(0, 10) < 5 ? dna1.three : dna2.three;
+        offspringDNA.shape = newCreatureShape;
+        offspringDNA.size = Random.Range(0, 10) < 5 ? dna1.size : dna2.size;
+        offspringDNA.red = Random.Range(0, 10) < 5 ? dna1.red : dna2.red;
+        offspringDNA.green = Random.Range(0, 10) < 5 ? dna1.green : dna2.green;
+        offspringDNA.blue = Random.Range(0, 10) < 5 ? dna1.blue : dna2.blue;
+        offspringDNA.health = Random.Range(0, 10) < 5 ? dna1.health : dna2.health;
+        offspringDNA.timeToLive = Random.Range(0, 10) < 5 ? dna1.timeToLive : dna2.timeToLive;
 
         // Apply random mutation based on the mutation rate
         if (Random.Range(0.0f, 1.0f) < mutationRate)
         {
-            offspringDNA.one = Random.Range(0.0f, 1.0f);
-            offspringDNA.two = Random.Range(0.0f, 1.0f);
-            offspringDNA.three = Random.Range(0.0f, 1.0f);
+            offspringDNA.size = Random.Range(0.0f, 1.0f);
+
+            offspringDNA.red = Random.Range(0.0f, 1.0f);
+            offspringDNA.green = Random.Range(0.0f, 1.0f);
+            offspringDNA.blue = Random.Range(0.0f, 1.0f);
         }
 
         // Evaluate fitness of the new offspring
@@ -185,21 +201,90 @@ public class PopulationManager : MonoBehaviour
         DNA dna = creature.GetComponent<DNA>();
 
         // Simple fitness function based on a single gene
-        if (dna.two >= 0.6f)
+        if (dna.blue >= 0.6f || dna.shape == Shape.Cube)
         {
             dna.fitnessLevel = FitnessLevel.Best;
         }
-        else if (dna.two >= 0.3f && dna.two < 0.6f)
+        else if (dna.blue >= 0.3f && dna.blue < 0.6f)
         {
             dna.fitnessLevel = FitnessLevel.Good;
         }
-        else if (dna.two >= 0.1f && dna.two < 0.3f)
+        else if ((dna.blue >= 0.1f && dna.blue < 0.3f) || dna.shape == Shape.Capsule)
         {
             dna.fitnessLevel = FitnessLevel.NotBad;
         }
         else
         {
             dna.fitnessLevel = FitnessLevel.Poor;
+        }
+    }
+
+    ///// FOR INITIAL POPULATION
+    ///
+    // Gets random position
+    private Vector3 GetRandomPosition()
+    {
+        return new Vector3(Random.Range(-8, 8), Random.Range(0.0f, 0.8f), Random.Range(0.0f, 10.0f));
+    }
+
+    // Gets random prefab
+    private GameObject GetRandomPrefab()
+    {
+        int value = Random.Range(1, 12);
+
+        if (value < 5)
+        {
+            return cubePrefab;
+        }
+        else if (value > 4 && value < 9)
+        {
+            return spherePrefab;
+        }
+        else // if value > 8
+        {
+            return capsulePrefab;
+        }
+    }
+
+    // Gets Shape name based on prefab
+    private Shape GetNameByPrefab(GameObject prefab)
+    {
+        if (prefab == cubePrefab)
+        {
+            return Shape.Cube;
+        }
+        else if (prefab == spherePrefab)
+        {
+            return Shape.Sphere;
+        }
+        else // if prefab == capsulePrefab
+        {
+            return Shape.Capsule;
+        }
+    }
+
+    ///// FOR BREEDING
+    ///
+    // Gets mid-point between parents 
+    private Vector3 GetNewCreaturePosition(Vector3 parent1Position, Vector3 parent2Position)
+    {
+        return (parent1Position + parent2Position) / 2;
+    }
+
+    // Gets prefab based on Shape name
+    private GameObject GetPrefabByName(Shape shapeName)
+    {
+        if (shapeName == Shape.Cube)
+        {
+            return cubePrefab;
+        }
+        else if (shapeName == Shape.Sphere)
+        {
+            return spherePrefab;
+        }
+        else // if shapeName == Shape.Capsule
+        {
+            return capsulePrefab;
         }
     }
 }

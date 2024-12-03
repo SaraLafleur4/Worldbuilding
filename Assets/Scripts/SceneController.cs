@@ -9,6 +9,8 @@ public class SceneController : MonoBehaviour
     public Button generateDecor;
     public Button generateCreatures;
 
+    // For creature population management
+    public PopulationManager populationManager;
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +28,7 @@ public class SceneController : MonoBehaviour
     public void GenerateCreatures()
     {
         Debug.Log("Generate Creatures clicked!");
+        populationManager.Initialize();
         return;
     }
 }
