@@ -10,6 +10,8 @@ public class TerrainNoiseGeneration : MonoBehaviour
     [SerializeField]
     private float scale;
 
+    public Vector2 seed = new Vector2(0f, 0f);
+
     private Terrain terrain;
     void Start()
     {
@@ -18,21 +20,19 @@ public class TerrainNoiseGeneration : MonoBehaviour
         GenerateTerrain(terrain.terrainData);
     }
 
-    public void GenerateTerrain(TerrainData terrainData)
-    {
+    public void GenerateTerrain(TerrainData terrainData) {
         terrainData.size = (Vector3)size;
         
         terrainData.SetHeights(0, 0, GenerateHeights(size));
     }
 
-    float[,] GenerateHeights(Vector3Int size)
-    {
+    float[,] GenerateHeights(Vector3Int size) {
         float[,] heights = new float[size.x, size.z];
         for (int x = 0; x < size.x; ++x)
             for (int z = 0; z < size.z; ++z)
                 heights[x,z] = Mathf.PerlinNoise(
-                    ((float)x / size.x) * scale,
-                    ((float)z / size.z) * scale
+                    ((float)x / size.x) * scale + seed.x,
+                    ((float)z / size.z) * scale + seed.y
                 );
 
         return heights;

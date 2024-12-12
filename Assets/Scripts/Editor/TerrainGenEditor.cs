@@ -9,11 +9,13 @@ public class TerrainGenEditor : Editor
 
         DrawDefaultInspector();
 
-        if (GUILayout.Button("Regenerate")) {
+        if (GUILayout.Button("Regenerate"))
             component.GenerateTerrainGUI();
-        }
-        if (GUILayout.Button("Reset Heights")) {
+        if (GUILayout.Button("Reset Heights"))
             component.ResetHeightsTerrainGUI();
-        }
+        if (GUILayout.Button("Randomize Seed"))
+            component.seed = new Vector2(
+                Random.Range(-1000f, 1000f),
+                Random.Range(-1000f, 1000f));
     }
 }
