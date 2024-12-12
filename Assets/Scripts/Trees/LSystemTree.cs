@@ -6,41 +6,97 @@ public class LSystemTree : MonoBehaviour
 {
     [Header("L-System Settings")]
     public string axiom = "F"; // Starting point of the system
-    public int iterations = 5; // Number of iterations of the system
+    public int iterations = 3; // Number of iterations of the system
     public float angle = 25.0f; // Branching angle
     public float length = 1.0f; // Initial branch length
 
     [Header("Branch Settings")]
     public Material branchMaterial; // Material for the branches
 
-
     [Header("Leaf Settings")]
     public Texture2D leafTexture; // Texture for the leaves
-    public float leafScaleMin = 0.8f; // Minimum leaf scale
-    public float leafScaleMax = 1.2f; // Maximum leaf scale
+    public Material leafMaterial; // Material for the leaves
+    public float leafScaleMin = 0.2f; // Minimum leaf scale
+    public float leafScaleMax = 0.4f; // Maximum leaf scale
 
     [Header("Leaf Shape")]
-    public float leafAspectRatio = 0.6f; // Height-to-width ratio for the leaves
-    public float leafRotationRange = 30f; // Random variation in leaf rotation
+    public float leafAspectRatio = 0.2f; // Height-to-width ratio for the leaves
+    public float leafRotationRange = 45f; // Random variation in leaf rotation
 
     [Header("L-System Rules")]
     public List<Rule> rules = new List<Rule>(); // List of rules configurable from the Inspector
 
     [Header("Branch Thickness Settings")]
-    public float initialThickness = 0.3f; // Initial thickness of the trunk
-    public float thicknessReduction = 0.7f; // Thickness reduction factor per level
-
+    public float initialThickness = 0.5f; // Initial thickness of the trunk
+    public float thicknessReduction = 0.4f; // Thickness reduction factor per level
 
     private string currentString;
+    private GameObject branchParent; // Parent object for all branches
+    private GameObject leafParent; // Parent object for all leaves
+
+    [Header("Forest Settings")]
+    public int numberOfTrees = 5; // Número de árboles a generar
+    public Vector2 planeSize = new Vector2(10, 10); // Tamaño del área de generación (X y Z)
+
 
     void Start()
     {
-        // Generate the system based on the axiom
+        // Empty Start, the tree generation is now triggered by the button
+    }
+
+    // Public function to generate the tree when called
+    public void GenerateForest()
+    {
+        // Limpiar árboles previos
+        if (branchParent != null) Destroy(branchParent);
+        if (leafParent != null) Destroy(leafParent);
+
+        // Crear nuevos padres para ramas y hojas
+        branchParent = new GameObject("Branches");
+        leafParent = new GameObject("Leaves");
+
+        for (int i = 0; i < numberOfTrees; i++)
+        {
+            // Generar posición aleatoria en el plano XZ
+            Vector3 randomPosition = new Vector3(
+                Random.Range(-planeSize.x / 2, planeSize.x / 2),
+                0,
+                Random.Range(-planeSize.y / 2, planeSize.y / 2)
+            );
+
+            // Generar el L-System del árbol
+            GenerateSingleTree(randomPosition);
+        }
+
+        // Combinar mallas para optimizar
+        CombineMeshes(branchParent, branchMaterial);
+        CombineMeshes(leafParent, leafMaterial);
+    }
+    void GenerateSingleTree(Vector3 position)
+    {
+        // Asignar valores aleatorios a las variables
+        iterations = Random.Range(1, 5); // Random entre 1 y 4 (inclusive)
+        angle = Random.Range(10.0f, 35.0f); // Random entre 10 y 35 (inclusive)
+
+        // Definir las posibles reglas
+        List<Rule[]> possibleRules = new List<Rule[]>
+    {
+        new Rule[] { new Rule { symbol = 'F', replacement = "F[+F]F[-F]F" } },
+        new Rule[] { new Rule { symbol = 'F', replacement = "FF+[+F-F-F]-[-F+F+F]" } },
+        new Rule[] { new Rule { symbol = 'F', replacement = "F[+F&F][-F^F]" } }
+    };
+
+        // Elegir una regla aleatoriamente
+        Rule[] chosenRules = possibleRules[Random.Range(0, possibleRules.Count)];
+        rules = new List<Rule>(chosenRules);
+
+        // Generar el sistema basado en el axiom y las reglas seleccionadas
         currentString = GenerateLSystem(axiom, iterations);
 
-        // Draw the tree
-        DrawTree();
+        // Dibujar el árbol
+        DrawTreeAt(position);
     }
+
 
     string GenerateLSystem(string axiom, int iterations)
     {
@@ -51,7 +107,7 @@ public class LSystemTree : MonoBehaviour
             foreach (char c in result)
             {
                 bool replaced = false;
-                // Replace the character according to the defined rules
+                // Reemplazar el carácter según las reglas definidas
                 foreach (var rule in rules)
                 {
                     if (c == rule.symbol)
@@ -63,7 +119,7 @@ public class LSystemTree : MonoBehaviour
                 }
                 if (!replaced)
                 {
-                    next += c.ToString(); // If no rule exists, keep the original character
+                    next += c.ToString(); // Si no hay regla, mantener el carácter original
                 }
             }
             result = next;
@@ -71,79 +127,71 @@ public class LSystemTree : MonoBehaviour
         return result;
     }
 
-    void DrawTree()
+    void DrawTreeAt(Vector3 basePosition)
     {
         Stack<TransformInfo> transformStack = new Stack<TransformInfo>();
-        Stack<float> thicknessStack = new Stack<float>(); // Stack to track the current thickness
-        Vector3 position = Vector3.zero;
+        Stack<float> thicknessStack = new Stack<float>();
+        Vector3 position = basePosition; // Empezar en la posición base
         Quaternion rotation = Quaternion.identity;
-        float currentThickness = initialThickness; // Start with the initial thickness
+        float currentThickness = initialThickness;
 
         foreach (char c in currentString)
         {
             if (c == 'F')
             {
-                // Calculate the start and end points of the branch
                 Vector3 start = position;
                 Vector3 end = start + (rotation * Vector3.up * length);
 
-                // Create a branch as a cylinder
                 GameObject branch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                branch.transform.position = (start + end) / 2; // Position at the center of the line
-                branch.transform.up = end - start; // Orientation towards the endpoint
-                branch.transform.localScale = new Vector3(currentThickness, Vector3.Distance(start, end) / 2, currentThickness); // Scale proportional to the branch length
+                branch.transform.parent = branchParent.transform;
+                branch.transform.position = (start + end) / 2;
+                branch.transform.up = end - start;
+                branch.transform.localScale = new Vector3(currentThickness, Vector3.Distance(start, end) / 2, currentThickness);
 
-                // Assign the brown material to the branch
                 if (branchMaterial != null)
                 {
                     branch.GetComponent<Renderer>().material = branchMaterial;
                 }
 
-                // Update the position for the next branch
                 position = end;
             }
             else if (c == '+')
             {
-                rotation *= Quaternion.Euler(0, 0, angle); // Positive rotation in Z
+                rotation *= Quaternion.Euler(0, 0, angle);
             }
             else if (c == '-')
             {
-                rotation *= Quaternion.Euler(0, 0, -angle); // Negative rotation in Z
+                rotation *= Quaternion.Euler(0, 0, -angle);
             }
             else if (c == '&')
             {
-                rotation *= Quaternion.Euler(angle, 0, 0); // Positive rotation in X
+                rotation *= Quaternion.Euler(angle, 0, 0);
             }
             else if (c == '^')
             {
-                rotation *= Quaternion.Euler(-angle, 0, 0); // Negative rotation in X
+                rotation *= Quaternion.Euler(-angle, 0, 0);
             }
             else if (c == '<')
             {
-                rotation *= Quaternion.Euler(0, angle, 0); // Positive rotation in Y
+                rotation *= Quaternion.Euler(0, angle, 0);
             }
             else if (c == '>')
             {
-                rotation *= Quaternion.Euler(0, -angle, 0); // Negative rotation in Y
+                rotation *= Quaternion.Euler(0, -angle, 0);
             }
             else if (c == '[')
             {
-                // Save the current position, rotation, and thickness
                 transformStack.Push(new TransformInfo(position, rotation));
                 thicknessStack.Push(currentThickness);
-
-                // Reduce the thickness for child branches
                 currentThickness *= thicknessReduction;
             }
             else if (c == ']')
             {
-                // Restore the saved position, rotation, and thickness
                 TransformInfo t = transformStack.Pop();
                 position = t.Position;
                 rotation = t.Rotation;
                 currentThickness = thicknessStack.Pop();
 
-                // Create a leaf at the branching point
                 CreateLeaf(position, rotation);
             }
         }
@@ -152,41 +200,54 @@ public class LSystemTree : MonoBehaviour
 
     void CreateLeaf(Vector3 position, Quaternion rotation)
     {
-        // Create a sphere for the leaf, which will be scaled to make it oval
+        // Crear una esfera para la hoja
         GameObject leaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        leaf.transform.parent = leafParent.transform; // Asignar al objeto padre de las hojas
 
-        // Adjust the position and orientation of the leaf
-        leaf.transform.position = position; // At the end position of the branch
-        leaf.transform.rotation = rotation; // With the same orientation as the branch
+        // Ajustar la posición y orientación de la hoja
+        leaf.transform.position = position; // En la posición final de la rama
+        leaf.transform.rotation = rotation; // Con la misma orientación que la rama
 
-        // Apply scaling with manual aspect ratio
+        // Aplicar escalado con aspecto aleatorio
         float randomScaleX = Random.Range(leafScaleMin, leafScaleMax);
-        float randomScaleY = randomScaleX * leafAspectRatio; // Use the parameter configured in the Inspector
-        leaf.transform.localScale = new Vector3(randomScaleX, randomScaleY, 1f); // Scale in X and Y for an oval shape
+        float randomScaleY = randomScaleX * leafAspectRatio; // Usar el parámetro configurado en el Inspector
+        leaf.transform.localScale = new Vector3(randomScaleX, randomScaleY, 1f); // Escalar en X y Y para forma ovalada
 
-        // Apply random rotation
+        // Aplicar rotación aleatoria
         leaf.transform.Rotate(Random.Range(-leafRotationRange, leafRotationRange), Random.Range(-leafRotationRange, leafRotationRange), 0);
 
-        // Change the material to apply the leaf texture
-        if (leafTexture != null)
+        // Asignar el material a la hoja
+        if (leafMaterial != null)
         {
-            Material leafMaterial = new Material(Shader.Find("Standard"));
-            leafMaterial.mainTexture = leafTexture;
-            leafMaterial.color = Color.green; // Adjust a green tint if there is no texture
             leaf.GetComponent<Renderer>().material = leafMaterial;
+        }
+        else if (leafTexture != null)
+        {
+            Material material = new Material(Shader.Find("Standard"));
+            material.mainTexture = leafTexture;
+            material.color = Color.green; // Ajustar un tinte verde si no hay textura
+            leaf.GetComponent<Renderer>().material = material;
         }
         else
         {
-            // If there is no texture, use a default green color
+            // Color por defecto si no hay material ni textura
             leaf.GetComponent<Renderer>().material.color = Color.green;
         }
+    }
+
+    void CombineMeshes(GameObject parent, Material material)
+    {
+        if (parent.transform.childCount == 0) return;
+
+        MeshCombiner meshCombiner = gameObject.AddComponent<MeshCombiner>();
+        meshCombiner.CombineMeshes(parent.transform, material);
     }
 
     [System.Serializable]
     public class Rule
     {
-        public char symbol; // Rule symbol (e.g., 'F')
-        public string replacement; // Rule replacement (e.g., "F[+F]F[-F]F")
+        public char symbol; // Símbolo de la regla (ejemplo: 'F')
+        public string replacement; // Reemplazo de la regla (ejemplo: "F[+F]F[-F]F")
     }
 
     private struct TransformInfo

@@ -132,6 +132,7 @@ GameObject:
   m_Component:
   - component: {fileID: 123972959}
   - component: {fileID: 123972958}
+  - component: {fileID: 123972960}
   m_Layer: 0
   m_Name: SceneController
   m_TagString: Untagged
@@ -168,6 +169,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &123972960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123972957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 800a921086bb14b68b35f70a0886698d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  axiom: F
+  iterations: 3
+  angle: 25
+  length: 1
+  branchMaterial: {fileID: 2100000, guid: b79a2456591959147874ea31c2ef9aa0, type: 2}
+  leafTexture: {fileID: 0}
+  leafMaterial: {fileID: 2100000, guid: dbc4493234793914a964c46d7eadee83, type: 2}
+  leafScaleMin: 0.2
+  leafScaleMax: 0.4
+  leafAspectRatio: 0.2
+  leafRotationRange: 45
+  rules: []
+  initialThickness: 0.5
+  thicknessReduction: 0.4
+  numberOfTrees: 5
+  planeSize: {x: 10, y: 10}
 --- !u!1 &143778805
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,6 +420,18 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 123972960}
+        m_TargetAssemblyTypeName: LSystemTree, Assembly-CSharp
+        m_MethodName: GenerateForest
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
