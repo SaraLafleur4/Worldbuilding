@@ -154,6 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   generateDecor: {fileID: 237166196}
   generateCreatures: {fileID: 143778807}
+  populationManager: {fileID: 0}
 --- !u!4 &123972959
 Transform:
   m_ObjectHideFlags: 0
@@ -181,6 +182,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 800a921086bb14b68b35f70a0886698d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numberOfTrees: 5
+  planePos: {x: 0, y: 0}
+  planeSize: {x: 10, y: 10}
   axiom: F
   iterations: 3
   angle: 25
@@ -195,8 +199,6 @@ MonoBehaviour:
   rules: []
   initialThickness: 0.5
   thicknessReduction: 0.4
-  numberOfTrees: 5
-  planeSize: {x: 10, y: 10}
 --- !u!1 &143778805
 GameObject:
   m_ObjectHideFlags: 0
@@ -231,9 +233,9 @@ RectTransform:
   - {fileID: 1414384560}
   m_Father: {fileID: 1422695056}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -810, y: 450}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 141, y: -84}
   m_SizeDelta: {x: 240, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &143778807
@@ -343,7 +345,7 @@ GameObject:
   - component: {fileID: 237166197}
   - component: {fileID: 237166196}
   m_Layer: 5
-  m_Name: GenerateDecor
+  m_Name: Propspulate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -364,9 +366,9 @@ RectTransform:
   - {fileID: 1040858054}
   m_Father: {fileID: 1422695056}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -830, y: 500}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 121, y: -34}
   m_SizeDelta: {x: 200, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &237166196
@@ -413,18 +415,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 11500000, guid: 6333719895d4e43dd980d70bd7ba6f64, type: 3}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: GenerateDecor
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 123972960}
         m_TargetAssemblyTypeName: LSystemTree, Assembly-CSharp
         m_MethodName: GenerateForest
@@ -654,13 +644,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.2464976, y: -0, z: -0, w: 0.96914345}
+  m_LocalPosition: {x: 0, y: 127, z: -101}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 28.541, y: 0, z: 0}
 --- !u!1 &1040858053
 GameObject:
   m_ObjectHideFlags: 0
@@ -693,10 +683,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 237166195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -15}
+  m_SizeDelta: {x: 200, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1040858055
 MonoBehaviour:
@@ -827,10 +817,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 143778806}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 120, y: -15}
+  m_SizeDelta: {x: 240, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1414384561
 MonoBehaviour:
