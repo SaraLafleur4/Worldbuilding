@@ -20,7 +20,6 @@ public class TerrainNoiseGeneration : MonoBehaviour
 
     public void GenerateTerrain(TerrainData terrainData)
     {
-        terrainData.heightmapResolution = 513;
         terrainData.size = (Vector3)size;
         
         terrainData.SetHeights(0, 0, GenerateHeights(size));
@@ -29,8 +28,8 @@ public class TerrainNoiseGeneration : MonoBehaviour
     float[,] GenerateHeights(Vector3Int size)
     {
         float[,] heights = new float[size.x, size.z];
-        for (int x = 0; x <= size.x+12; ++x)
-            for (int z = 0; z <= size.z+12; ++z)
+        for (int x = 0; x < size.x; ++x)
+            for (int z = 0; z < size.z; ++z)
                 heights[x,z] = Mathf.PerlinNoise(
                     ((float)x / size.x) * scale,
                     ((float)z / size.z) * scale
