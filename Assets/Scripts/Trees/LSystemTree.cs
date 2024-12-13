@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class LSystemTree : MonoBehaviour
 {
@@ -40,29 +41,18 @@ public class LSystemTree : MonoBehaviour
     private GameObject leafParent; // Parent object for all leaves
 
     public void GenerateForest() {
-        if (branchParent != null) Destroy(branchParent);
-        if (leafParent != null) Destroy(leafParent);
-
-        branchParent = new GameObject("Branches");
-        leafParent = new GameObject("Leaves");
+        
 
         for (int i = 0; i < numberOfTrees; i++) {
-            var randomPosition = new Vector3(
-                Random.Range(0, planeSize.x + planePos.y),
-                0,
-                Random.Range(0, planeSize.y + planePos.x)
-            );
+            
 
-            if (Terrain.activeTerrain != null) randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
-
-            GenerateSingleTree(randomPosition);
+            GenerateSingleTree();
         }
 
-        CombineMeshes(branchParent, branchMaterial);
-        CombineMeshes(leafParent, leafMaterial);
+        
     }
 
-    void GenerateSingleTree(Vector3 position) {
+    void GenerateSingleTree() {
         iterations = Random.Range(1, 5);
         angle = Random.Range(10.0f, 35.0f);
 
@@ -70,6 +60,7 @@ public class LSystemTree : MonoBehaviour
             new Rule[] { new Rule { symbol = 'F', replacement = "F[+F]F[-F]F" } },
             new Rule[] { new Rule { symbol = 'F', replacement = "FF+[+F-F-F]-[-F+F+F]" } },
             new Rule[] { new Rule { symbol = 'F', replacement = "F[+F&F][-F^F]" } }
+
         };
 
         // Elegir una regla aleatoriamente
@@ -79,8 +70,23 @@ public class LSystemTree : MonoBehaviour
         // Generar el sistema basado en el axiom y las reglas seleccionadas
         currentString = GenerateLSystem(axiom, iterations);
 
+        
+
+
+        branchParent = new GameObject("Branches");
+        leafParent = new GameObject("Leaves");
+
+       
+        var randomPosition = new Vector3(
+            Random.Range(0, planeSize.x + planePos.y),0,Random.Range(0, planeSize.y + planePos.x));
+        if (Terrain.activeTerrain != null) randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
+
+            
+
+        CombineMeshes(branchParent, branchMaterial);
+        CombineMeshes(leafParent, leafMaterial);
         // Dibujar el árbol
-        DrawTreeAt(position);
+        DrawTreeAt(randomPosition);
     }
 
 
