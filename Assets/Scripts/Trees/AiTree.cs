@@ -56,7 +56,7 @@ public class AiTree : MonoBehaviour
         leafMaterial = leaf;
     }
 
-    public void Generate(Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, uint treeNb)
+    public void Generate(Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, int treeNb)
     {
         branches = new GameObject("Branches");
         leaves = new GameObject("Leaves");
@@ -151,13 +151,13 @@ public class AiTree : MonoBehaviour
         if (leafMaterial != null) leaf.GetComponent<Renderer>().material = leafMaterial;
     }
 
-    private void CombineTreeMesh(uint treeNb)
+    private void CombineTreeMesh(int treeNb)
     {
         // Get branches and leaves objects
         string newBranchesName = "Tree" + treeNb + "-Branches";
-        List<GameObject> branchObjects = CombineMeshes(branches, branchMaterial, newBranchesName, this.transform); // replace this.transform by null for project root
+        List<GameObject> branchObjects = CombineMeshes(branches, branchMaterial, newBranchesName, null);
         string newLeavesName = "Tree" + treeNb + "-Leaves";
-        List<GameObject> leavesObjects = CombineMeshes(leaves, leafMaterial, newLeavesName, this.transform); // replace this.transform by null for project root
+        List<GameObject> leavesObjects = CombineMeshes(leaves, leafMaterial, newLeavesName, null);
 
         // Get the entire tree's mesh
         treeMesh = branchObjects; // add the branches
@@ -171,9 +171,7 @@ public class AiTree : MonoBehaviour
     {
         if (parent.transform.childCount == 0) return null;
 
-        MeshCombiner meshCombiner = gameObject.GetComponent<MeshCombiner>();
-        if (meshCombiner == null) meshCombiner = gameObject.AddComponent<MeshCombiner>();
-
+        MeshCombiner meshCombiner = gameObject.GetComponent<MeshCombiner>() ?? gameObject.AddComponent<MeshCombiner>();
         return meshCombiner.CombineMeshes(parent.transform, material, newMeshName, newParent);
     }
 }
