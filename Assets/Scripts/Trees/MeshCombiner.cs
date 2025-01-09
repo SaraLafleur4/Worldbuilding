@@ -3,8 +3,10 @@ using UnityEngine;
 
 public class MeshCombiner : MonoBehaviour
 {
-    public void CombineMeshes(Transform parentTransform, Material meshMaterial, string newMeshName, Transform newParent = null)
+    public List<GameObject> CombineMeshes(Transform parentTransform, Material meshMaterial, string newMeshName, Transform newParent = null)
     {
+        List<GameObject> newObjectList = new List<GameObject>();
+
         MeshFilter[] meshFilters = parentTransform.GetComponentsInChildren<MeshFilter>();
         List<CombineInstance> combine = new List<CombineInstance>();
         int vertexCount = 0;
@@ -17,7 +19,8 @@ public class MeshCombiner : MonoBehaviour
 
             if (vertexCount + meshVertexCount > 65535)
             {
-                CreateCombinedMesh(newParent, combine, meshMaterial, newMeshName);
+                GameObject newObject = CreateCombinedMesh(newParent, combine, meshMaterial, newMeshName);
+                newObjectList.Add(newObject);
                 combine.Clear();
                 vertexCount = 0;
             }
@@ -34,13 +37,16 @@ public class MeshCombiner : MonoBehaviour
 
         if (combine.Count > 0)
         {
-            CreateCombinedMesh(newParent, combine, meshMaterial, newMeshName);
+            GameObject newObject = CreateCombinedMesh(newParent, combine, meshMaterial, newMeshName);
+            newObjectList.Add(newObject);
         }
 
         DeleteOriginalMeshes(objectsToDelete);
+
+        return newObjectList;
     }
 
-    private void CreateCombinedMesh(Transform newParent, List<CombineInstance> combine, Material meshMaterial, string newMeshName)
+    private GameObject CreateCombinedMesh(Transform newParent, List<CombineInstance> combine, Material meshMaterial, string newMeshName)
     {
         Mesh combinedMesh = new Mesh();
         combinedMesh.CombineMeshes(combine.ToArray(), true, true);
@@ -51,6 +57,8 @@ public class MeshCombiner : MonoBehaviour
         meshFilter.mesh = combinedMesh;
         MeshRenderer meshRenderer = combinedObject.AddComponent<MeshRenderer>();
         meshRenderer.material = meshMaterial;
+
+        return combinedObject;
     }
 
     private void DeleteOriginalMeshes(List<GameObject> objectsToDelete)

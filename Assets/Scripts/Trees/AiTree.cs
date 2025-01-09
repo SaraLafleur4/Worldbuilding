@@ -20,6 +20,7 @@ public class AiTree : MonoBehaviour
 
     private GameObject branches;
     private GameObject leaves;
+    private List<GameObject> treeMesh; // branches + leaves
 
     private struct TransformInfo
     {
@@ -41,7 +42,10 @@ public class AiTree : MonoBehaviour
 
     public void DestroyTree()
     {
-        // TODO: implement
+        foreach (var mesh in treeMesh)
+        {
+            Destroy(mesh);
+        }
     }
 
     public void SetMaterials(Material branch, Material leaf)
@@ -147,20 +151,27 @@ public class AiTree : MonoBehaviour
 
     private void CombineTreeMesh(uint treeNb)
     {
+        // Get branches and leaves objects
         string newBranchesName = "Tree" + treeNb + "-Branches";
-        CombineMeshes(branches, branchMaterial, newBranchesName, this.transform); // replace this.transform by null for project root
-
+        List<GameObject> branchObjects = CombineMeshes(branches, branchMaterial, newBranchesName, this.transform); // replace this.transform by null for project root
         string newLeavesName = "Tree" + treeNb + "-Leaves";
-        CombineMeshes(leaves, leafMaterial, newLeavesName, this.transform); // replace this.transform by null for project root
+        List<GameObject> leavesObjects = CombineMeshes(leaves, leafMaterial, newLeavesName, this.transform); // replace this.transform by null for project root
+
+        // Get the entire tree's mesh
+        treeMesh = branchObjects; // add the branches
+        foreach (var obj in leavesObjects) // then the leaves
+        {
+            treeMesh.Add(obj);
+        }
     }
 
-    private void CombineMeshes(GameObject parent, Material material, string newMeshName, Transform newParent)
+    private List<GameObject> CombineMeshes(GameObject parent, Material material, string newMeshName, Transform newParent)
     {
-        if (parent.transform.childCount == 0) return;
+        if (parent.transform.childCount == 0) return null;
 
         MeshCombiner meshCombiner = gameObject.GetComponent<MeshCombiner>();
         if (meshCombiner == null) meshCombiner = gameObject.AddComponent<MeshCombiner>();
 
-        meshCombiner.CombineMeshes(parent.transform, material, newMeshName, newParent);
+        return meshCombiner.CombineMeshes(parent.transform, material, newMeshName, newParent);
     }
 }
