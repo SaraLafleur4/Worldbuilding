@@ -11,6 +11,7 @@ public class RocksGenerator : MonoBehaviour
 
     public int numberOfRocks = 10;
 
+    public Vector2 planeAngle = new Vector2();
     public Vector2 planeSize = new Vector2(10, 10); // Tamaño del área donde se generarán las rocas
     public Vector2 planePos = new Vector2(250, 250); // Posición base del área
 
@@ -39,16 +40,25 @@ public class RocksGenerator : MonoBehaviour
 
         // Calcular una posición aleatoria dentro del área definida
         var randomPosition = new Vector3(
-            Random.Range(planePos.x, planePos.x + planeSize.x), // Coordenada X
+            planeAngle.x + Random.Range(planePos.x, planePos.x + planeSize.x), // Coordenada X
             0,                                                 // Altura inicial
-            Random.Range(planePos.y, planePos.y + planeSize.y)  // Coordenada Z
+            planeAngle.y + Random.Range(planePos.y, planePos.y + planeSize.y)  // Coordenada Z
+
+
+
+        
         );
 
-        // Ajustar la altura si hay un terreno activo
-        if (Terrain.activeTerrain != null)
-        {
-            randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
-        }
+        randomPosition.x = Mathf.Clamp(randomPosition.x, planeAngle.x, planeAngle.x + planeSize.x);
+        randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
+        randomPosition.z = Mathf.Clamp(randomPosition.z, planeAngle.y, planeAngle.y + planeSize.y);
+
+
+
+        randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
+
+        
+
 
         // Generar la roca en la escena
         Instantiate(chosenRockPrefab, randomPosition, Quaternion.identity);
