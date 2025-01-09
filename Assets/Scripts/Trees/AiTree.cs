@@ -22,6 +22,8 @@ public class AiTree : MonoBehaviour
     private GameObject leaves;
     private List<GameObject> treeMesh; // branches + leaves
 
+    public List<GameObject> GetTreeMesh() => treeMesh;
+
     private struct TransformInfo
     {
         public Vector3 Position;
