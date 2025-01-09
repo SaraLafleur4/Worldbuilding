@@ -1,9 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public class Tree : MonoBehaviour
+public class AiTree : MonoBehaviour
 {
     [Header("Branch Settings")]
     public Material branchMaterial;
@@ -35,10 +33,15 @@ public class Tree : MonoBehaviour
         }
     }
 
-    public void DestroyTree()
+    public void DestroyOriginalTreeMesh()
     {
         Destroy(branches);
         Destroy(leaves);
+    }
+
+    public void DestroyTree()
+    {
+        // TODO: implement
     }
 
     public void SetMaterials(Material branch, Material leaf)
@@ -47,7 +50,7 @@ public class Tree : MonoBehaviour
         leafMaterial = leaf;
     }
 
-    public void Generate(Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle)
+    public void Generate(Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, uint treeNb)
     {
         branches = new GameObject("Branches");
         leaves = new GameObject("Leaves");
@@ -59,9 +62,9 @@ public class Tree : MonoBehaviour
         );
         if (Terrain.activeTerrain != null) randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
 
-        CombineTreeMesh();
-
         DrawTreeAt(randomPosition, lSystemString, lSystemLength, lSystemAngle);
+        CombineTreeMesh(treeNb);
+        DestroyOriginalTreeMesh();
     }
 
     public void DrawTreeAt(Vector3 basePosition, string lSystemString, float lSystemLength, float lSystemAngle)
@@ -142,19 +145,22 @@ public class Tree : MonoBehaviour
         if (leafMaterial != null) leaf.GetComponent<Renderer>().material = leafMaterial;
     }
 
-    public void CombineTreeMesh()
+    private void CombineTreeMesh(uint treeNb)
     {
-        CombineMeshes(branches, branchMaterial);
-        CombineMeshes(leaves, leafMaterial);
+        string newBranchesName = "Tree" + treeNb + "-Branches";
+        CombineMeshes(branches, branchMaterial, newBranchesName, this.transform); // replace this.transform by null for project root
+
+        string newLeavesName = "Tree" + treeNb + "-Leaves";
+        CombineMeshes(leaves, leafMaterial, newLeavesName, this.transform); // replace this.transform by null for project root
     }
 
-    private void CombineMeshes(GameObject parent, Material material)
+    private void CombineMeshes(GameObject parent, Material material, string newMeshName, Transform newParent)
     {
         if (parent.transform.childCount == 0) return;
 
         MeshCombiner meshCombiner = gameObject.GetComponent<MeshCombiner>();
-        if (meshCombiner == null) gameObject.AddComponent<MeshCombiner>();
+        if (meshCombiner == null) meshCombiner = gameObject.AddComponent<MeshCombiner>();
 
-        meshCombiner.CombineMeshes(parent.transform, material);
+        meshCombiner.CombineMeshes(parent.transform, material, newMeshName, newParent);
     }
 }
