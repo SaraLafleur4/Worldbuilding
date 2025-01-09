@@ -73,3 +73,7 @@ crashlytics-build.properties
 
 # Specific to this project
 /[Aa]ssets/[Tt]errain[Dd]ata*
+
+# MacOS files
+.DS_Store
+Desktop.ini
