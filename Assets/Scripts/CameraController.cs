@@ -27,7 +27,7 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetMouseButtonDown(0)){
+        if(Input.GetMouseButtonDown(1)){
             _cameraEnabled = !_cameraEnabled;
             Cursor.visible = !Cursor.visible;
             Cursor.lockState = _cameraEnabled ? CursorLockMode.Locked : CursorLockMode.None;
