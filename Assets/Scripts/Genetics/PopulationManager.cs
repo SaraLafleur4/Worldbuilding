@@ -265,8 +265,6 @@ public class PopulationManager : MonoBehaviour
     private void AdjustToTerrain(GameObject creature)
     {
         Vector3 position = creature.transform.position;
-        position.y = Terrain.activeTerrain.SampleHeight(position);
-        creature.transform.position = position;
 
         Vector3 terrainNormal = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(
             position.x / Terrain.activeTerrain.terrainData.size.x,
