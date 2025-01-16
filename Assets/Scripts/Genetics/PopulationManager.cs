@@ -5,31 +5,31 @@ using UnityEngine;
 
 public class PopulationManager : MonoBehaviour
 {
-    public GameObject cubePrefab;
-    public GameObject spherePrefab;
-    public GameObject capsulePrefab;
+    public int initialPopSize = 100;
+    public int maxPopSize = 3000;
 
-    public int initialPopSize = 10;
-    public int maxPopSize = 300;
-
-    public List<GameObject> population;
+    public List<Creature> population;
 
     public float mutationRate = 0.01f;
     public int generation = 0;
 
-    public Vector2 spawningAreaAngle = new Vector2();
-    public Vector2 spawningAreaSize = new Vector2(10f, 10f);
-    public Vector2 breedingDisplacement = new Vector2(10f, 10f);
+    private Vector3 startingPosition = Vector3.zero;
+    private Vector2 spawningAreaAngle = new Vector2(10f, 10f);
+    private Vector2 spawningAreaSize = new Vector2(490f, 490f);
+    private Vector2 breedingDisplacement = new Vector2(50f, 50f);
+
+    private Coroutine breedingCoroutine;
+    public CreatureGenerator creatureGenerator;
+
+    private bool isInitialized = false;
 
     public bool DEBUG = false;
 
-    private Coroutine breedingCoroutine;
-
-    public void StartBreeding()
+    private void StartBreeding()
     {
         breedingCoroutine = StartCoroutine(BreedingCycle());
 
-        if (DEBUG) Debug.Log("Breeding Started!");
+        Debug.Log("Breeding Started!");
     }
 
     private IEnumerator BreedingCycle()
@@ -41,35 +41,37 @@ public class PopulationManager : MonoBehaviour
         }
     }
 
-    public void StopBreeding()
+    private void StopBreeding()
     {
         if (breedingCoroutine != null)
         {
             StopCoroutine(breedingCoroutine);
             breedingCoroutine = null;
 
-            if (DEBUG) Debug.Log($"Breeding Stopped after {generation} generations!");
+            Debug.Log($"Breeding Stopped after {generation} generations!");
         }
     }
 
     public void Initialize()
     {
-        population = new List<GameObject>();
+        population = new List<Creature>();
         InitializePopulation();
-
+        isInitialized = true;
         StartBreeding();
     }
 
     private void Update()
     {
+        if (!isInitialized) return;
+
         for (int i = population.Count - 1; i >= 0; i--)
         {
-            DNA dna = population[i].GetComponent<DNA>();
+            DNA dna = population[i].dna;
             dna.timeToLive -= Time.deltaTime;
 
             if (dna.timeToLive <= 0)
             {
-                Destroy(population[i]);
+                Destroy(population[i].model);
                 population.RemoveAt(i);
             }
         }
@@ -81,28 +83,13 @@ public class PopulationManager : MonoBehaviour
     {
         for (int i = 0; i < initialPopSize; i++)
         {
-            GameObject prefab = GetRandomPrefab();
-            Vector3 position = GetRandomPosition();
-            GameObject creature = Instantiate(prefab, position, Quaternion.identity, gameObject.transform);
-
-            AdjustToTerrain(creature);
-
-            DNA dna = creature.GetComponent<DNA>();
-            dna.shape = GetNameByPrefab(prefab);
-            dna.size = Random.Range(0.0f, 1.0f);
-            dna.red = Random.Range(0.0f, 1.0f);
-            dna.green = Random.Range(0.0f, 1.0f);
-            dna.blue = Random.Range(0.0f, 1.0f);
-            dna.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
-            dna.timeToLive = Random.Range(5.0f, 30.0f);
-
-            EvaluateFitness(creature);
-
+            Creature creature = new Creature(creatureGenerator);
+            creature.DisplayCreature(startingPosition, spawningAreaAngle, spawningAreaSize);
             population.Add(creature);
         }
     }
 
-    public void BreedNewGeneration()
+    private void BreedNewGeneration()
     {
         if (DEBUG) Debug.Log($"Breed! - current population size = {population.Count}");
 
@@ -113,18 +100,23 @@ public class PopulationManager : MonoBehaviour
             return;
         }
 
-        List<GameObject> possibleParents = GetPossibleParentsList();
+        List<Creature> possibleParents = GetPossibleParentsList();
         if (DEBUG) Debug.Log($"{possibleParents.Count} possible parents.");
 
         for (int i = 0; i < possibleParents.Count; i += 2)
         {
-            GameObject parent1 = SelectParent(possibleParents);
-            GameObject parent2 = SelectParent(possibleParents);
+            Creature parent1 = SelectParent(possibleParents);
+            Creature parent2 = SelectParent(possibleParents);
 
             if (parent1 != null && parent2 != null)
             {
-                population.Add(Breed(parent1, parent2));
-                population.Add(Breed(parent1, parent2));
+                Creature offspring1 = Breed(parent1.dna, parent2.dna);
+                offspring1.DisplayCreature(startingPosition, spawningAreaAngle, spawningAreaSize);
+                population.Add(offspring1);
+
+                Creature offspring2 = Breed(parent1.dna, parent2.dna);
+                offspring2.DisplayCreature(startingPosition, spawningAreaAngle, spawningAreaSize);
+                population.Add(offspring2);
             }
             else
             {
@@ -135,13 +127,13 @@ public class PopulationManager : MonoBehaviour
         generation++;
     }
 
-    public List<GameObject> GetPossibleParentsList()
+    private List<Creature> GetPossibleParentsList()
     {
-        List<GameObject> possibleParents = new List<GameObject>();
+        List<Creature> possibleParents = new List<Creature>();
 
         foreach (var creature in population)
         {
-            float timeToLive = creature.GetComponent<DNA>().timeToLive; // TODO: should depend on health
+            float timeToLive = creature.dna.timeToLive; // TODO: should depend on health
 
             if (timeToLive > 15) possibleParents.Add(creature);
         }
@@ -149,15 +141,14 @@ public class PopulationManager : MonoBehaviour
         return possibleParents;
     }
 
-    // Selects a parent based on weighted random selection, favoring creatures with higher fitness
     // /!\ PARENT SELECTION SHOULD BEE UPDATED LATER ON /!\
-    GameObject SelectParent(List<GameObject> possibleParents)
+    private Creature SelectParent(List<Creature> possibleParents)
     {
         List<int> weights = new List<int>();
 
         foreach (var creature in possibleParents)
         {
-            FitnessLevel fitness = creature.GetComponent<DNA>().fitnessLevel;
+            FitnessLevel fitness = creature.fitness;
 
             switch (fitness)
             {
@@ -201,145 +192,26 @@ public class PopulationManager : MonoBehaviour
         return possibleParents[possibleParents.Count - 1];
     }
 
-    private GameObject Breed(GameObject parent1, GameObject parent2)
+    private Creature Breed(DNA dna1, DNA dna2)
     {
-        DNA dna1 = parent1.GetComponent<DNA>();
-        DNA dna2 = parent2.GetComponent<DNA>();
+        DNA offspringDNA = CombineDNA(dna1, dna2);
+        offspringDNA.Mutate(mutationRate);
 
-        Shape newCreatureShape = Random.Range(0, 10) < 5 ? dna1.shape : dna2.shape;
-        GameObject prefab = GetPrefabByName(newCreatureShape);
-        Vector3 position = GetNewCreaturePosition(parent1.transform.localPosition, parent2.transform.localPosition);
+        return new Creature(offspringDNA, creatureGenerator);
+    }
 
-        GameObject offspring = Instantiate(prefab, position, Quaternion.identity, gameObject.transform);
-
-        AdjustToTerrain(offspring);
-
+    private DNA CombineDNA(DNA parent1, DNA parent2)
+    {
+        DNA offspringDNA = new DNA();
         // Crossover: randomly choose genes from either parent
-        DNA offspringDNA = offspring.GetComponent<DNA>();
-        offspringDNA.shape = newCreatureShape;
-        offspringDNA.size = Random.Range(0, 10) < 5 ? dna1.size : dna2.size;
-        offspringDNA.red = Random.Range(0, 10) < 5 ? dna1.red : dna2.red;
-        offspringDNA.green = Random.Range(0, 10) < 5 ? dna1.green : dna2.green;
-        offspringDNA.blue = Random.Range(0, 10) < 5 ? dna1.blue : dna2.blue;
+        offspringDNA.shape = Random.Range(0, 10) < 5 ? parent1.shape : parent2.shape;
+        offspringDNA.size = Random.Range(0, 10) < 5 ? parent1.size : parent2.size;
+        offspringDNA.red = Random.Range(0, 10) < 5 ? parent1.red : parent2.red;
+        offspringDNA.green = Random.Range(0, 10) < 5 ? parent1.green : parent2.green;
+        offspringDNA.blue = Random.Range(0, 10) < 5 ? parent1.blue : parent2.blue;
         // NO Crossover: random health and life span
         offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
         offspringDNA.timeToLive = Random.Range(5.0f, 30.0f);
-
-        if (Random.Range(0.0f, 1.0f) < mutationRate)
-        {
-            offspringDNA.size = Random.Range(0.0f, 5.0f);
-            offspringDNA.red = Random.Range(0.0f, 1.0f);
-            offspringDNA.green = Random.Range(0.0f, 1.0f);
-            offspringDNA.blue = Random.Range(0.0f, 1.0f);
-        }
-
-        EvaluateFitness(offspring);
-
-        return offspring;
-    }
-
-    // Evaluates fitness of an creature based on gene expression
-    // /!\ FITNESS EVALUATION SHOULD BE UPDATED LATER ON /!\
-    private void EvaluateFitness(GameObject creature)
-    {
-        DNA dna = creature.GetComponent<DNA>();
-
-        if (dna.blue >= 0.6f && dna.shape == Shape.Cube)
-        {
-            dna.fitnessLevel = FitnessLevel.Best;
-        }
-        else if (dna.blue >= 0.3f && dna.blue < 0.6f)
-        {
-            dna.fitnessLevel = FitnessLevel.Good;
-        }
-        else if (dna.blue >= 0.1f && dna.blue < 0.3f && dna.shape == Shape.Sphere)
-        {
-            dna.fitnessLevel = FitnessLevel.NotBad;
-        }
-        else
-        {
-            dna.fitnessLevel = FitnessLevel.Poor;
-        }
-    }
-
-    private void AdjustToTerrain(GameObject creature)
-    {
-        Vector3 position = creature.transform.position;
-
-        Vector3 terrainNormal = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(
-            position.x / Terrain.activeTerrain.terrainData.size.x,
-            position.z / Terrain.activeTerrain.terrainData.size.z);
-
-        creature.transform.rotation = Quaternion.FromToRotation(Vector3.up, terrainNormal);
-
-        Renderer renderer = creature.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            float creatureHeight = renderer.bounds.size.y;
-            position.y += creatureHeight / 2.0f; // because the creatures anchor point is in its center
-            position.y += 0.1f; // fine tuning
-        }
-
-        creature.transform.position = position;
-    }
-
-    ///// FOR INITIAL POPULATION
-    private Vector3 GetRandomPosition()
-    {
-        var vec = new Vector3(
-            spawningAreaAngle.x + Random.Range(0, spawningAreaSize.x),
-            0,
-            spawningAreaAngle.y + Random.Range(0, spawningAreaSize.y));
-
-        vec.y = Terrain.activeTerrain.SampleHeight(vec);
-        return vec;
-    }
-
-    private GameObject GetRandomPrefab()
-    {
-        int value = Random.Range(1, 12);
-
-        if (value < 5)
-            return cubePrefab;
-        else if (value > 4 && value < 9)
-            return spherePrefab;
-        else // if value > 8
-            return capsulePrefab;
-    }
-
-    private Shape GetNameByPrefab(GameObject prefab)
-    {
-        if (prefab == cubePrefab)
-            return Shape.Cube;
-        else if (prefab == spherePrefab)
-            return Shape.Sphere;
-        else // if prefab == capsulePrefab
-            return Shape.Capsule;
-    }
-
-    ///// FOR BREEDING
-    private Vector3 GetNewCreaturePosition(Vector3 parent1Position, Vector3 parent2Position)
-    {
-        Vector3 vec = (parent1Position + parent2Position) / 2 +
-            new Vector3(
-                Random.Range(-breedingDisplacement.x / 2f, breedingDisplacement.x / 2f),
-                0f,
-                Random.Range(-breedingDisplacement.y / 2f, breedingDisplacement.y / 2f));
-
-        vec.x = Mathf.Clamp(vec.x, spawningAreaAngle.x, spawningAreaAngle.x + spawningAreaSize.x);
-        vec.y = Terrain.activeTerrain.SampleHeight(vec);
-        vec.z = Mathf.Clamp(vec.z, spawningAreaAngle.y, spawningAreaAngle.y + spawningAreaSize.y);
-
-        return vec;
-    }
-
-    private GameObject GetPrefabByName(Shape shapeName)
-    {
-        if (shapeName == Shape.Cube)
-            return cubePrefab;
-        else if (shapeName == Shape.Sphere)
-            return spherePrefab;
-        else // if shapeName == Shape.Capsule
-            return capsulePrefab;
+        return offspringDNA;
     }
 }
