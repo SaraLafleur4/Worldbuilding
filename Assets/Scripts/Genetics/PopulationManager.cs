@@ -93,7 +93,7 @@ public class PopulationManager : MonoBehaviour
             dna.red = Random.Range(0.0f, 1.0f);
             dna.green = Random.Range(0.0f, 1.0f);
             dna.blue = Random.Range(0.0f, 1.0f);
-            dna.health = (uint)Random.Range(1.0f, 10.0f);
+            dna.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
             dna.timeToLive = Random.Range(5.0f, 30.0f);
 
             EvaluateFitness(creature);
@@ -126,6 +126,10 @@ public class PopulationManager : MonoBehaviour
                 population.Add(Breed(parent1, parent2));
                 population.Add(Breed(parent1, parent2));
             }
+            else
+            {
+                if (DEBUG) Debug.LogError("Parent selection failed. Null parent returned.");
+            }
         }
 
         generation++;
@@ -137,7 +141,7 @@ public class PopulationManager : MonoBehaviour
 
         foreach (var creature in population)
         {
-            float timeToLive = creature.GetComponent<DNA>().timeToLive;
+            float timeToLive = creature.GetComponent<DNA>().timeToLive; // TODO: should depend on health
 
             if (timeToLive > 15) possibleParents.Add(creature);
         }
@@ -145,6 +149,8 @@ public class PopulationManager : MonoBehaviour
         return possibleParents;
     }
 
+    // Selects a parent based on weighted random selection, favoring creatures with higher fitness
+    // /!\ PARENT SELECTION SHOULD BEE UPDATED LATER ON /!\
     GameObject SelectParent(List<GameObject> possibleParents)
     {
         List<int> weights = new List<int>();
@@ -191,6 +197,7 @@ public class PopulationManager : MonoBehaviour
             }
         }
 
+        if (DEBUG) Debug.LogWarning("Fallback reached in SelectParent method. Returning the last creature.");
         return possibleParents[possibleParents.Count - 1];
     }
 
@@ -207,13 +214,15 @@ public class PopulationManager : MonoBehaviour
 
         AdjustToTerrain(offspring);
 
+        // Crossover: randomly choose genes from either parent
         DNA offspringDNA = offspring.GetComponent<DNA>();
         offspringDNA.shape = newCreatureShape;
         offspringDNA.size = Random.Range(0, 10) < 5 ? dna1.size : dna2.size;
         offspringDNA.red = Random.Range(0, 10) < 5 ? dna1.red : dna2.red;
         offspringDNA.green = Random.Range(0, 10) < 5 ? dna1.green : dna2.green;
         offspringDNA.blue = Random.Range(0, 10) < 5 ? dna1.blue : dna2.blue;
-        offspringDNA.health = (uint)Random.Range(1.0f, 10.0f);
+        // NO Crossover: random health and life span
+        offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
         offspringDNA.timeToLive = Random.Range(5.0f, 30.0f);
 
         if (Random.Range(0.0f, 1.0f) < mutationRate)
@@ -229,6 +238,8 @@ public class PopulationManager : MonoBehaviour
         return offspring;
     }
 
+    // Evaluates fitness of an creature based on gene expression
+    // /!\ FITNESS EVALUATION SHOULD BE UPDATED LATER ON /!\
     private void EvaluateFitness(GameObject creature)
     {
         DNA dna = creature.GetComponent<DNA>();
@@ -252,40 +263,29 @@ public class PopulationManager : MonoBehaviour
     }
 
     private void AdjustToTerrain(GameObject creature)
-{
-    Vector3 position = creature.transform.position;
-
-    // Obtener la altura del terreno en la posición actual
-    position.y = Terrain.activeTerrain.SampleHeight(position);
-
-    // Aplicar la nueva posición en el terreno antes de ajustar la rotación
-    creature.transform.position = position;
-
-    // Ajustar la rotación según la normal del terreno
-    Vector3 terrainNormal = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(
-        position.x / Terrain.activeTerrain.terrainData.size.x,
-        position.z / Terrain.activeTerrain.terrainData.size.z);
-
-    creature.transform.rotation = Quaternion.FromToRotation(Vector3.up, terrainNormal);
-
-    // Ajustar la altura después de adaptar al terreno
-    Renderer renderer = creature.GetComponent<Renderer>();
-    if (renderer != null)
     {
-        float creatureHeight = renderer.bounds.size.y;
+        Vector3 position = creature.transform.position;
+        position.y = Terrain.activeTerrain.SampleHeight(position);
+        creature.transform.position = position;
 
-        // Elevar la criatura para que esté completamente sobre el terreno
-        position.y += creatureHeight / 2.0f;
+        Vector3 terrainNormal = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(
+            position.x / Terrain.activeTerrain.terrainData.size.x,
+            position.z / Terrain.activeTerrain.terrainData.size.z);
 
-        // Añadir un pequeño desplazamiento adicional para evitar problemas
-        position.y += 0.1f; // Ajuste fino
+        creature.transform.rotation = Quaternion.FromToRotation(Vector3.up, terrainNormal);
+
+        Renderer renderer = creature.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            float creatureHeight = renderer.bounds.size.y;
+            position.y += creatureHeight / 2.0f; // because the creatures anchor point is in its center
+            position.y += 0.1f; // fine tuning
+        }
+
+        creature.transform.position = position;
     }
 
-    // Actualizar la posición final con la altura ajustada
-    creature.transform.position = position;
-}
-
-
+    ///// FOR INITIAL POPULATION
     private Vector3 GetRandomPosition()
     {
         var vec = new Vector3(
@@ -305,7 +305,7 @@ public class PopulationManager : MonoBehaviour
             return cubePrefab;
         else if (value > 4 && value < 9)
             return spherePrefab;
-        else
+        else // if value > 8
             return capsulePrefab;
     }
 
@@ -315,10 +315,11 @@ public class PopulationManager : MonoBehaviour
             return Shape.Cube;
         else if (prefab == spherePrefab)
             return Shape.Sphere;
-        else
+        else // if prefab == capsulePrefab
             return Shape.Capsule;
     }
 
+    ///// FOR BREEDING
     private Vector3 GetNewCreaturePosition(Vector3 parent1Position, Vector3 parent2Position)
     {
         Vector3 vec = (parent1Position + parent2Position) / 2 +
@@ -340,7 +341,7 @@ public class PopulationManager : MonoBehaviour
             return cubePrefab;
         else if (shapeName == Shape.Sphere)
             return spherePrefab;
-        else
+        else // if shapeName == Shape.Capsule
             return capsulePrefab;
     }
 }
