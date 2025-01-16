@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class RocksGenerator : MonoBehaviour
+public class Rocks : MonoBehaviour
 {
     public GameObject rockPrefab1;
     public GameObject rockPrefab2;
