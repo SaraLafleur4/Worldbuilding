@@ -153,9 +153,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a16d637783e3c3199a505e3061125b74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 513, y: 210, z: 513}
-  scale: 2
-  seed: {x: -166.35788, y: 945.51135}
+  size: {x: 513, y: 90, z: 513}
+  scale: 5
+  seed: {x: 876.96936, y: 988.54236}
 --- !u!154 &325344141
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -174,7 +174,7 @@ TerrainCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: 8946201f1d608fc43ba3b870591b7aa3, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: c3b098f92fd876347b801e86e65ba963, type: 2}
   m_EnableTreeColliders: 1
 --- !u!218 &325344142
 Terrain:
@@ -185,7 +185,7 @@ Terrain:
   m_GameObject: {fileID: 325344139}
   m_Enabled: 1
   serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: 8946201f1d608fc43ba3b870591b7aa3, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: c3b098f92fd876347b801e86e65ba963, type: 2}
   m_TreeDistance: 5000
   m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5
@@ -757,8 +757,20 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1676945112}
-        m_TargetAssemblyTypeName: LSystemTree, Assembly-CSharp
+        m_TargetAssemblyTypeName: Forest, Assembly-CSharp
         m_MethodName: GenerateForest
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: RocksGenerator, Assembly-CSharp
+        m_MethodName: GenerateRocks
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1152,8 +1164,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1676945110}
-  - component: {fileID: 1676945112}
   - component: {fileID: 1676945111}
+  - component: {fileID: 1676945112}
+  - component: {fileID: 1676945113}
   m_Layer: 0
   m_Name: PropsManager
   m_TagString: Untagged
@@ -1197,26 +1210,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1676945109}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 800a921086bb14b68b35f70a0886698d, type: 3}
+  m_Script: {fileID: 11500000, guid: dd8ece9eca87d46e48b9587293da427f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   numberOfTrees: 10
-  planePos: {x: 250, y: 250}
-  planeSize: {x: 10, y: 10}
+  planePos: {x: 10, y: 10}
+  planeSize: {x: 490, y: 490}
   axiom: F
   iterations: 3
   angle: 25
   length: 1
-  branchMaterial: {fileID: 2100000, guid: b79a2456591959147874ea31c2ef9aa0, type: 2}
-  leafTexture: {fileID: 0}
-  leafMaterial: {fileID: 2100000, guid: dbc4493234793914a964c46d7eadee83, type: 2}
-  leafScaleMin: 0.2
-  leafScaleMax: 0.4
-  leafAspectRatio: 0.2
-  leafRotationRange: 45
   rules: []
-  initialThickness: 0.5
-  thicknessReduction: 0.4
 --- !u!1 &1942491682
 GameObject:
   m_ObjectHideFlags: 0
@@ -1358,7 +1362,7 @@ SceneRoots:
   - {fileID: 790593051}
   - {fileID: 432520501}
   - {fileID: 325344143}
-  - {fileID: 995946429}
   - {fileID: 1676945110}
+  - {fileID: 995946429}
   - {fileID: 590797982}
   - {fileID: 1353334113}
