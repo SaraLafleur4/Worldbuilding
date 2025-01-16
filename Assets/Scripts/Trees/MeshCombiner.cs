@@ -1,33 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Classe qui combine plusieurs meshes en un seul
-/// </summary>
 public class MeshCombiner : MonoBehaviour
 {
-    /// <summary>
-    /// Combine tous les MeshFilters enfants en un seul ou plusieurs meshes (en fonction de la limite de vertex par mesh)
-    /// </summary>
-    /// <param name="parentTransform">Transform parent qui contient les MeshFilters à combiner</param>
-    /// <param name="meshMaterial"> Matériau à appliquer aux meshes</param>
-    public void CombineMeshes(Transform parentTransform, Material meshMaterial)
+    public List<GameObject> CombineMeshes(Transform parentTransform, Material meshMaterial, string newMeshName, Transform newParent = null)
     {
+        List<GameObject> newObjectList = new List<GameObject>();
+
         MeshFilter[] meshFilters = parentTransform.GetComponentsInChildren<MeshFilter>();
         List<CombineInstance> combine = new List<CombineInstance>();
         int vertexCount = 0;
-        List<Mesh> combinedMeshes = new List<Mesh>();
+        List<GameObject> objectsToDelete = new List<GameObject>();
 
-        // Parcourt tous les MeshFilters pour les combiner
         for (int i = 0; i < meshFilters.Length; i++)
         {
             Mesh mesh = meshFilters[i].sharedMesh;
             int meshVertexCount = mesh.vertexCount;
 
-            // Si ajouter le  mesh dépasse la limite, on crée un mesh combiné
             if (vertexCount + meshVertexCount > 65535)
             {
-                CreateCombinedMesh(parentTransform, combine, meshMaterial, combinedMeshes);
+                GameObject newObject = CreateCombinedMesh(newParent, combine, meshMaterial, newMeshName);
+                newObjectList.Add(newObject);
                 combine.Clear();
                 vertexCount = 0;
             }
@@ -38,35 +31,41 @@ public class MeshCombiner : MonoBehaviour
             combine.Add(instance);
 
             vertexCount += meshVertexCount;
-            meshFilters[i].gameObject.SetActive(false);  // Désactive les voxels originaux
+            objectsToDelete.Add(meshFilters[i].gameObject);
+            meshFilters[i].gameObject.SetActive(false);
         }
 
-        // Combine le dernier groupe de meshes s'il en reste
         if (combine.Count > 0)
         {
-            CreateCombinedMesh(parentTransform, combine, meshMaterial, combinedMeshes);
+            GameObject newObject = CreateCombinedMesh(newParent, combine, meshMaterial, newMeshName);
+            newObjectList.Add(newObject);
         }
+
+        DeleteOriginalMeshes(objectsToDelete);
+
+        return newObjectList;
     }
 
-    /// <summary>
-    /// Crée un mesh combiné à partir des MeshFilters donnés et l'ajoute comme enfant du parent
-    /// </summary>
-    /// <param name="parentTransform">Transform parent pour le mesh combiné</param>
-    /// <param name="combine">Liste des CombineInstance représentant les meshes à combiner</param>
-    /// <param name="meshMaterial"> Matériau à appliquer au mesh combiné</param>
-    /// <param name="combinedMeshes">Liste des meshes combinés</param>
-    private void CreateCombinedMesh(Transform parentTransform, List<CombineInstance> combine, Material meshMaterial, List<Mesh> combinedMeshes)
+    private GameObject CreateCombinedMesh(Transform newParent, List<CombineInstance> combine, Material meshMaterial, string newMeshName)
     {
         Mesh combinedMesh = new Mesh();
-        combinedMesh.CombineMeshes(combine.ToArray(), true, true);  
-        combinedMeshes.Add(combinedMesh); 
+        combinedMesh.CombineMeshes(combine.ToArray(), true, true);
 
-        // Crée un nouvel objet pour le mesh combiné
-        GameObject combinedObject = new GameObject("CombinedMesh");
-        combinedObject.transform.parent = parentTransform;
+        GameObject combinedObject = new GameObject(newMeshName);
+        combinedObject.transform.parent = newParent; // Place under new parent if provided
         MeshFilter meshFilter = combinedObject.AddComponent<MeshFilter>();
         meshFilter.mesh = combinedMesh;
         MeshRenderer meshRenderer = combinedObject.AddComponent<MeshRenderer>();
         meshRenderer.material = meshMaterial;
+
+        return combinedObject;
+    }
+
+    private void DeleteOriginalMeshes(List<GameObject> objectsToDelete)
+    {
+        foreach (var obj in objectsToDelete)
+        {
+            Destroy(obj);
+        }
     }
 }
