@@ -9,6 +9,14 @@ public class CreatureGenerator : MonoBehaviour
 
     private Vector3 initialPosition = Vector3.zero;
 
+    private float scaleFactor;
+    private Color creatureColor;
+    private float bodySize;
+    private float headSize;
+    private float earSize;
+    private float eyeSize;
+    private int earNumber;
+
     public GameObject GenerateModel(Creature creature)
     {
         GameObject creatureModel = new GameObject("Creature");
@@ -16,72 +24,96 @@ public class CreatureGenerator : MonoBehaviour
 
         GameObject prefab = GetPrefabByName(creature.dna.shape);
 
-        Vector3 headPosition = CreateBody(prefab, initialPosition, creatureModel, creature);
-        CreateEyes(eyePrefab, headPosition, creatureModel, creature);
+        InitializeVariables(creature);
+
+        Vector3 headPosition = CreateCreatureModel(prefab, initialPosition, creatureModel);
+        CreateEyes(eyePrefab, headPosition, creatureModel);
 
         return creatureModel;
     }
 
-    private Vector3 CreateBody(GameObject prefab, Vector3 initialPosition, GameObject creatureModel, Creature creature)
+    private void InitializeVariables(Creature creature)
     {
-        float scaleFactor = creature.scaleFactor;
-        Color creatureColor = creature.color;
+        scaleFactor = creature.dna.size;
+        bodySize = 1f * scaleFactor;
+        headSize = 0.8f * scaleFactor;
+        earSize = 0.2f * scaleFactor;
+        eyeSize = 0.25f * scaleFactor;
 
-        // Tailles des sphères du corps basées sur le scaleFactor contenu dans le genome
-        float baseSize = 1f * scaleFactor;
-        float largeSize = 0.8f * scaleFactor;
-        // float smallerSize = 0.7f * scaleFactor;
-        // float topSize = 0.3f * scaleFactor;
+        creatureColor = new Color(creature.dna.red, creature.dna.green, creature.dna.blue);
 
-        // Positionement de chaque sphère
+        earNumber = creature.dna.earNumber;
+    }
+
+    private Vector3 CreateCreatureModel(GameObject prefab, Vector3 initialPosition, GameObject creatureModel)
+    {
         Vector3 basePosition = initialPosition;
-        Vector3 largePosition = basePosition + new Vector3(0, (baseSize / 2 + largeSize / 2) * 0.8f, 0);
-        // Vector3 smallerPosition = largePosition + new Vector3(0.2f, (largeSize / 2 + smallerSize / 2) * 0.8f, 0);
-        // Vector3 topPosition = smallerPosition + new Vector3(0.2f, (smallerSize / 2 + topSize / 2) * 0.8f, 0);
+        Vector3 headPosition = basePosition + new Vector3(0, (bodySize / 2 + headSize / 2) * 0.8f, 0);
+        if (prefab == capsulePrefab) headPosition.y += headPosition.y / 2;
+        Vector3 earPosition = headPosition + new Vector3(0, (headSize / 2 + earSize / 2) * 0.8f, 0);
+        if (prefab == capsulePrefab) earPosition.y += earPosition.y / 4;
 
-        // Création des sphères du corps
-        CreateSphere(prefab, basePosition, baseSize, creatureColor, creatureModel);
-        CreateSphere(prefab, largePosition, largeSize, creatureColor, creatureModel);
-        // CreateSphere(prefab, smallerPosition, smallerSize, creatureColor, creatureModel);
-        // CreateSphere(prefab, topPosition, topSize, creatureColor, creatureModel);
+        CreateBodyPart(prefab, basePosition, bodySize, creatureColor, creatureModel);
+        CreateBodyPart(prefab, headPosition, headSize, creatureColor, creatureModel);
+        CreateEars(prefab, earPosition, creatureModel);
 
-        return largePosition;
+        return headPosition;
     }
 
-    private void CreateSphere(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel)
+    private void CreateEars(GameObject prefab, Vector3 position, GameObject creatureModel)
     {
-        GameObject bodySphere = Instantiate(prefab, position, Quaternion.identity);
-        bodySphere.transform.localScale = new Vector3(size, size, size);
-        bodySphere.GetComponent<Renderer>().material.color = color;
-        bodySphere.transform.SetParent(creatureModel.transform);
+        var earOffset = new Vector3(headSize / 3, 0, 0);
+
+        switch (earNumber)
+        {
+            case 1:
+                CreateBodyPart(prefab, position, earSize, creatureColor, creatureModel);
+                break;
+            case 2:
+                CreateBodyPart(prefab, position + earOffset, earSize, creatureColor, creatureModel);
+                CreateBodyPart(prefab, position - earOffset, earSize, creatureColor, creatureModel);
+                break;
+            case 3:
+                CreateBodyPart(prefab, position, earSize, creatureColor, creatureModel);
+                CreateBodyPart(prefab, position + earOffset, earSize, creatureColor, creatureModel);
+                CreateBodyPart(prefab, position - earOffset, earSize, creatureColor, creatureModel);
+                break;
+            default:
+                break;
+        }
     }
 
-    private void CreateEyes(GameObject eyePrefab, Vector3 headPosition, GameObject creatureModel, Creature creature)
+    private void CreateBodyPart(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel)
     {
-        float scaleFactor = creature.scaleFactor;
-        float largeSize = 1.2f * scaleFactor;
-        float size = 0.3f * scaleFactor;
+        GameObject body = Instantiate(prefab, position, Quaternion.identity);
+        body.transform.localScale = new Vector3(size, size, size);
+        body.GetComponent<Renderer>().material.color = color;
+        body.transform.SetParent(creatureModel.transform);
+    }
 
+    private void CreateEyes(GameObject eyePrefab, Vector3 headPosition, GameObject creatureModel)
+    {
         // Left eye
-        Vector3 leftEyePosition = headPosition + new Vector3(-largeSize / 6, 0.1f * scaleFactor, largeSize / 2 - 0.1f * scaleFactor);
+        Vector3 leftEyePosition = headPosition + new Vector3(-headSize / 6, 0.1f * scaleFactor, headSize / 2 - 0.1f * scaleFactor);
         GameObject leftEye = Instantiate(eyePrefab, leftEyePosition, Quaternion.identity);
-        leftEye.transform.localScale = new Vector3(size, size, size);
+        leftEye.transform.localScale = new Vector3(eyeSize, eyeSize, eyeSize);
         leftEye.transform.SetParent(creatureModel.transform);
 
         // Right eye
-        Vector3 rightEyePosition = headPosition + new Vector3(largeSize / 6, 0.1f * scaleFactor, largeSize / 2 - 0.1f * scaleFactor);
+        Vector3 rightEyePosition = headPosition + new Vector3(headSize / 6, 0.1f * scaleFactor, headSize / 2 - 0.1f * scaleFactor);
         GameObject rightEye = Instantiate(eyePrefab, rightEyePosition, Quaternion.identity);
-        rightEye.transform.localScale = new Vector3(size, size, size);
+        rightEye.transform.localScale = new Vector3(eyeSize, eyeSize, eyeSize);
         rightEye.transform.SetParent(creatureModel.transform);
     }
 
     private GameObject GetPrefabByName(Shape shapeName)
     {
-        if (shapeName == Shape.Cube)
-            return cubePrefab;
-        else if (shapeName == Shape.Sphere)
-            return spherePrefab;
-        else // if shapeName == Shape.Capsule
-            return capsulePrefab;
+        switch (shapeName)
+        {
+            case Shape.Cube: return cubePrefab;
+            case Shape.Sphere: return spherePrefab;
+            case Shape.Capsule: return capsulePrefab;
+            default: return cubePrefab;
+        }
     }
 }

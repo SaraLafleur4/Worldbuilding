@@ -7,6 +7,7 @@ public class DNA
     public float red;                   // creature color
     public float green;
     public float blue;
+    public int earNumber;               // creature number of ears
     public float health;                // creature health
     public float timeToLive;            // creature life span
 
@@ -19,6 +20,7 @@ public class DNA
         red = Random.Range(0.0f, 1.0f);
         green = Random.Range(0.0f, 1.0f);
         blue = Random.Range(0.0f, 1.0f);
+        earNumber = Random.Range(0, 4);
         health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
         timeToLive = Random.Range(5.0f, 30.0f);
     }
@@ -31,6 +33,7 @@ public class DNA
             red = Random.Range(0.0f, 1.0f);
             green = Random.Range(0.0f, 1.0f);
             blue = Random.Range(0.0f, 1.0f);
+            earNumber = Random.Range(0, 3);
         }
     }
 

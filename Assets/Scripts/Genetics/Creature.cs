@@ -3,27 +3,21 @@ using UnityEngine;
 public class Creature
 {
     public DNA dna;
+    public CreatureGenerator creatureGenerator;
     public FitnessLevel fitness;
     public GameObject model;
-    public CreatureGenerator creatureGenerator;
-    public Color color;
-    public float scaleFactor;
 
     public Creature(CreatureGenerator generator)
     {
         dna = new DNA();
-        color = new Color(dna.red, dna.green, dna.blue);
-        scaleFactor = dna.size;
         creatureGenerator = generator;
-        EvaluateFitness();
+        fitness = EvaluateFitness();
         model = creatureGenerator.GenerateModel(this);
     }
 
     public Creature(DNA generatedDNA, CreatureGenerator generator)
     {
         dna = generatedDNA;
-        color = new Color(dna.red, dna.green, dna.blue);
-        scaleFactor = dna.size;
         creatureGenerator = generator;
         EvaluateFitness();
         model = creatureGenerator.GenerateModel(this);
@@ -57,25 +51,24 @@ public class Creature
         model.transform.rotation = Quaternion.FromToRotation(Vector3.up, terrainNormal);
     }
 
-    // Evaluates fitness of an creature based on gene expression
     // /!\ FITNESS EVALUATION SHOULD BE UPDATED LATER ON /!\
-    private void EvaluateFitness()
+    private FitnessLevel EvaluateFitness()
     {
         if (dna.blue >= 0.6f && dna.shape == Shape.Cube)
         {
-            fitness = FitnessLevel.Best;
+            return FitnessLevel.Best;
         }
         else if (dna.blue >= 0.3f && dna.blue < 0.6f)
         {
-            fitness = FitnessLevel.Good;
+            return FitnessLevel.Good;
         }
         else if (dna.blue >= 0.1f && dna.blue < 0.3f && dna.shape == Shape.Sphere)
         {
-            fitness = FitnessLevel.NotBad;
+            return FitnessLevel.NotBad;
         }
         else
         {
-            fitness = FitnessLevel.Poor;
+            return FitnessLevel.Poor;
         }
     }
 

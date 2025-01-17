@@ -28,7 +28,6 @@ public class PopulationManager : MonoBehaviour
     private void StartBreeding()
     {
         breedingCoroutine = StartCoroutine(BreedingCycle());
-
         Debug.Log("Breeding Started!");
     }
 
@@ -47,7 +46,6 @@ public class PopulationManager : MonoBehaviour
         {
             StopCoroutine(breedingCoroutine);
             breedingCoroutine = null;
-
             Debug.Log($"Breeding Stopped after {generation} generations!");
         }
     }
@@ -209,6 +207,7 @@ public class PopulationManager : MonoBehaviour
         offspringDNA.red = Random.Range(0, 10) < 5 ? parent1.red : parent2.red;
         offspringDNA.green = Random.Range(0, 10) < 5 ? parent1.green : parent2.green;
         offspringDNA.blue = Random.Range(0, 10) < 5 ? parent1.blue : parent2.blue;
+        offspringDNA.earNumber = Random.Range(0, 10) < 5 ? parent1.earNumber : parent2.earNumber;
         // NO Crossover: random health and life span
         offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
         offspringDNA.timeToLive = Random.Range(5.0f, 30.0f);
