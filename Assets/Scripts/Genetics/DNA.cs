@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class DNA
 {
-    public Shape shape;                 // creature shape
+    public Shape bodyShape;             // creature shapes
+    public Shape headShape;
+    public Shape earShape;
     public float size;                  // creature size
     public float red;                   // creature color
     public float green;
@@ -15,7 +17,9 @@ public class DNA
 
     public DNA()
     {
-        shape = GetRandomShape();
+        bodyShape = GetRandomShape();
+        headShape = GetRandomShape();
+        earShape = GetRandomShape();
         size = Random.Range(0.0f, 1.0f);
         red = Random.Range(0.0f, 1.0f);
         green = Random.Range(0.0f, 1.0f);

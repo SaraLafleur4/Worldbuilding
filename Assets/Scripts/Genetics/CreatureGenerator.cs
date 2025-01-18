@@ -10,7 +10,12 @@ public class CreatureGenerator : MonoBehaviour
     private Vector3 initialPosition = Vector3.zero;
 
     private float scaleFactor;
-    private Color creatureColor;
+    private Color bodyColor;
+    private Color headColor;
+    private Color earColor;
+    private GameObject bodyPrefab;
+    private GameObject headPrefab;
+    private GameObject earPrefab;
     private float bodySize;
     private float headSize;
     private float earSize;
@@ -22,40 +27,58 @@ public class CreatureGenerator : MonoBehaviour
         GameObject creatureModel = new GameObject("Creature");
         creatureModel.transform.position = initialPosition;
 
-        GameObject prefab = GetPrefabByName(creature.dna.shape);
-
         InitializeVariables(creature);
 
-        Vector3 headPosition = CreateCreatureModel(prefab, initialPosition, creatureModel);
-        CreateEyes(eyePrefab, headPosition, creatureModel);
+        CreateCreatureModel(initialPosition, creatureModel);
 
         return creatureModel;
     }
 
     private void InitializeVariables(Creature creature)
     {
+        bodyPrefab = GetPrefabByName(creature.dna.bodyShape);
+        headPrefab = GetPrefabByName(creature.dna.headShape);
+        earPrefab = GetPrefabByName(creature.dna.earShape);
+
         scaleFactor = creature.dna.size;
         bodySize = 1f * scaleFactor;
         headSize = 0.8f * scaleFactor;
         earSize = 0.2f * scaleFactor;
         eyeSize = 0.25f * scaleFactor;
 
-        creatureColor = new Color(creature.dna.red, creature.dna.green, creature.dna.blue);
+        bodyColor = new Color(creature.dna.red, creature.dna.green, creature.dna.blue);
+        headColor = new Color(creature.dna.red, creature.dna.green / 2, creature.dna.blue / 4);
+        earColor = new Color(creature.dna.red / 2, creature.dna.green, creature.dna.blue);
 
         earNumber = creature.dna.earNumber;
     }
 
-    private Vector3 CreateCreatureModel(GameObject prefab, Vector3 initialPosition, GameObject creatureModel)
+    private Vector3 CreateCreatureModel(Vector3 initialPosition, GameObject creatureModel)
     {
-        Vector3 basePosition = initialPosition;
-        Vector3 headPosition = basePosition + new Vector3(0, (bodySize / 2 + headSize / 2) * 0.8f, 0);
-        if (prefab == capsulePrefab) headPosition.y += headPosition.y / 2;
-        Vector3 earPosition = headPosition + new Vector3(0, (headSize / 2 + earSize / 2) * 0.8f, 0);
-        if (prefab == capsulePrefab) earPosition.y += earPosition.y / 4;
+        // Body
+        Vector3 bodyPosition = initialPosition;
+        CreateBodyPart(bodyPrefab, bodyPosition, bodySize, bodyColor, creatureModel);
 
-        CreateBodyPart(prefab, basePosition, bodySize, creatureColor, creatureModel);
-        CreateBodyPart(prefab, headPosition, headSize, creatureColor, creatureModel);
-        CreateEars(prefab, earPosition, creatureModel);
+        // Head
+        Vector3 headPosition = bodyPosition + new Vector3(0, (bodySize / 2 + headSize / 2) * 0.8f, 0);
+        if (bodyPrefab == capsulePrefab) headPosition.y += headPosition.y / 2;
+        CreateBodyPart(headPrefab, headPosition, headSize, headColor, creatureModel);
+
+        // Ears
+        Vector3 earPosition = headPosition + new Vector3(0, (headSize / 2 + earSize / 2) * 0.8f, 0);
+        if (headPrefab == capsulePrefab)
+        {
+            earPosition.y += earPosition.y / 4;
+            if (earPrefab == cubePrefab || earPrefab == spherePrefab)
+            {
+                earPosition.y += earPosition.y / 16;
+            }
+        }
+        if (headPrefab == cubePrefab && earPrefab == spherePrefab) earPosition.y += earPosition.y / 16;
+        CreateEars(earPrefab, earPosition, creatureModel);
+
+        // Eyes
+        CreateEyes(eyePrefab, headPosition, creatureModel);
 
         return headPosition;
     }
@@ -67,16 +90,16 @@ public class CreatureGenerator : MonoBehaviour
         switch (earNumber)
         {
             case 1:
-                CreateBodyPart(prefab, position, earSize, creatureColor, creatureModel);
+                CreateBodyPart(prefab, position, earSize, earColor, creatureModel);
                 break;
             case 2:
-                CreateBodyPart(prefab, position + earOffset, earSize, creatureColor, creatureModel);
-                CreateBodyPart(prefab, position - earOffset, earSize, creatureColor, creatureModel);
+                CreateBodyPart(prefab, position + earOffset, earSize, earColor, creatureModel);
+                CreateBodyPart(prefab, position - earOffset, earSize, earColor, creatureModel);
                 break;
             case 3:
-                CreateBodyPart(prefab, position, earSize, creatureColor, creatureModel);
-                CreateBodyPart(prefab, position + earOffset, earSize, creatureColor, creatureModel);
-                CreateBodyPart(prefab, position - earOffset, earSize, creatureColor, creatureModel);
+                CreateBodyPart(prefab, position, earSize, earColor, creatureModel);
+                CreateBodyPart(prefab, position + earOffset, earSize, earColor, creatureModel);
+                CreateBodyPart(prefab, position - earOffset, earSize, earColor, creatureModel);
                 break;
             default:
                 break;

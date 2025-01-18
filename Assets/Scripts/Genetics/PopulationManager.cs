@@ -202,7 +202,9 @@ public class PopulationManager : MonoBehaviour
     {
         DNA offspringDNA = new DNA();
         // Crossover: randomly choose genes from either parent
-        offspringDNA.shape = Random.Range(0, 10) < 5 ? parent1.shape : parent2.shape;
+        offspringDNA.bodyShape = Random.Range(0, 10) < 5 ? parent1.bodyShape : parent2.bodyShape;
+        offspringDNA.headShape = Random.Range(0, 10) < 5 ? parent1.headShape : parent2.headShape;
+        offspringDNA.earShape = Random.Range(0, 10) < 5 ? parent1.earShape : parent2.earShape;
         offspringDNA.size = Random.Range(0, 10) < 5 ? parent1.size : parent2.size;
         offspringDNA.red = Random.Range(0, 10) < 5 ? parent1.red : parent2.red;
         offspringDNA.green = Random.Range(0, 10) < 5 ? parent1.green : parent2.green;

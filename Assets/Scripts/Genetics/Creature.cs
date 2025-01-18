@@ -54,15 +54,15 @@ public class Creature
     // /!\ FITNESS EVALUATION SHOULD BE UPDATED LATER ON /!\
     private FitnessLevel EvaluateFitness()
     {
-        if (dna.blue >= 0.6f && dna.shape == Shape.Cube)
+        if (dna.blue >= 0.6f && dna.bodyShape == Shape.Cube)
         {
             return FitnessLevel.Best;
         }
-        else if (dna.blue >= 0.3f && dna.blue < 0.6f)
+        else if (dna.blue >= 0.3f && dna.blue < 0.6f && dna.headShape == Shape.Sphere)
         {
             return FitnessLevel.Good;
         }
-        else if (dna.blue >= 0.1f && dna.blue < 0.3f && dna.shape == Shape.Sphere)
+        else if (dna.blue >= 0.1f && dna.blue < 0.3f)
         {
             return FitnessLevel.NotBad;
         }
