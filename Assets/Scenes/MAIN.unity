@@ -530,6 +530,7 @@ GameObject:
   m_Component:
   - component: {fileID: 995946429}
   - component: {fileID: 995946428}
+  - component: {fileID: 995946430}
   m_Layer: 0
   m_Name: PopulationManager
   m_TagString: Untagged
@@ -549,17 +550,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72143871fed374691a2b75ef34bb80fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 4562027720179092877, guid: 39c86bf781c514ccda826e04f48276d7, type: 3}
-  spherePrefab: {fileID: 8609608863842956493, guid: d3e25f0c10ced4674ae773b71454cab9, type: 3}
-  capsulePrefab: {fileID: 8413680554181507069, guid: 2d053a69475c8481e8c025ea213e3eef, type: 3}
   initialPopSize: 100
   maxPopSize: 3000
-  population: []
   mutationRate: 0.01
   generation: 0
-  spawningAreaAngle: {x: 10, y: 10}
-  spawningAreaSize: {x: 490, y: 490}
-  breedingDisplacement: {x: 50, y: 50}
+  creatureGenerator: {fileID: 995946430}
   DEBUG: 0
 --- !u!4 &995946429
 Transform:
@@ -576,6 +571,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &995946430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995946427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31f73e9f4e404f81876add39893a316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eyePrefab: {fileID: 3720740942392686356, guid: 2cb717f3292194bae85a5060870bf3db, type: 3}
+  spherePrefab: {fileID: 8609608863842956493, guid: d3e25f0c10ced4674ae773b71454cab9, type: 3}
+  cubePrefab: {fileID: 4562027720179092877, guid: 39c86bf781c514ccda826e04f48276d7, type: 3}
+  capsulePrefab: {fileID: 8413680554181507069, guid: 2d053a69475c8481e8c025ea213e3eef, type: 3}
 --- !u!1 &1279974457
 GameObject:
   m_ObjectHideFlags: 0
