@@ -153,8 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a16d637783e3c3199a505e3061125b74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 513, y: 210, z: 513}
-  scale: 2
+  size: {x: 513, y: 101, z: 513}
+  scale: 4.43
   seed: {x: 940.41516, y: -256.32968}
 --- !u!154 &325344141
 TerrainCollider:
