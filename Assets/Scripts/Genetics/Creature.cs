@@ -1,3 +1,4 @@
+using Palmmedia.ReportGenerator.Core.Parser.Analysis;
 using UnityEngine;
 
 public class Creature
@@ -51,99 +52,85 @@ public class Creature
         model.transform.rotation = Quaternion.FromToRotation(Vector3.up, terrainNormal);
     }
 
-    // /!\ FITNESS EVALUATION SHOULD BE UPDATED LATER ON /!\
     private FitnessLevel EvaluateFitness()
     {
-        if (dna.blue >= 0.6f && dna.bodyShape == Shape.Cube)
+        float totalFitness = EvaluateFitnessTotal();
+        switch (totalFitness)
         {
-            return FitnessLevel.Best;
-        }
-        else if (dna.blue >= 0.3f && dna.blue < 0.6f && dna.headShape == Shape.Sphere)
-        {
-            return FitnessLevel.Good;
-        }
-        else if (dna.blue >= 0.1f && dna.blue < 0.3f)
-        {
-            return FitnessLevel.NotBad;
-        }
-        else
-        {
-            return FitnessLevel.Poor;
+            case > 10: return FitnessLevel.Best;
+            case > 9: return FitnessLevel.Good;
+            case > 7: return FitnessLevel.NotBad;
+            default: return FitnessLevel.Poor;
         }
     }
 
-    // private void EvaluateFitness()
-    // {
-    //     fitness = 0f;
-    //     fitness += EvaluateColor();
-    //     fitness += EvaluateScale();
-    //     fitness += EvaluateTentaclesWidth();
-    //     fitness += EvaluateTentaclesNumber();
-    //     fitness += EvaluateCourbe();
-    // }
+    private float EvaluateFitnessTotal()
+    {
+        float totalFitness = 0f;
+        totalFitness += EvaluateColor();
+        totalFitness += EvaluateSize();
+        return totalFitness;
+    }
 
-    // private float EvaluateColor()
-    // {
-    //     int colorBits = Utils.BitToInt(genome[0], genome[1]);
-    //     switch (colorBits)
-    //     {
-    //         case (3): return 1.75f;
-    //         case (2): return 2.5f;
-    //         case (1): return 2.25f;
-    //         case (0): return 3.5f;
-    //         default: return 0;
-    //     }
-    // }
+    private float EvaluateColor()
+    {
+        float colorFitness = 0f;
+        colorFitness += EvaluateRed();
+        colorFitness += EvaluateGreen();
+        colorFitness += EvaluateBlue();
+        return colorFitness;
+    }
 
-    // private float EvaluateScale()
-    // {
-    //     int scaleBits = Utils.BitToInt(genome[6], genome[7]);
-    //     switch (scaleBits)
-    //     {
-    //         case (3): return 1.5f;
-    //         case (2): return 2.75f;
-    //         case (1): return 3.25f;
-    //         case (0): return 2.5f;
-    //         default: return 0;
-    //     }
-    // }
+    private float EvaluateRed()
+    {
+        switch (dna.red)
+        {
+            case < 0.2f: return 2f;
+            case < 0.3f: return 1.5f;
+            case < 0.4f: return 1f;
+            default: return 0;
+        }
+    }
 
-    // private float EvaluateTentaclesWidth()
-    // {
-    //     int tentaclesWidthBits = Utils.BitToInt(genome[2], genome[3]);
-    //     switch (tentaclesWidthBits)
-    //     {
-    //         case (3): return 1.5f;
-    //         case (2): return 3f;
-    //         case (1): return 2.5f;
-    //         case (0): return 2f;
-    //         default: return 0;
-    //     }
-    // }
+    private float EvaluateGreen()
+    {
+        switch (dna.green)
+        {
+            case > 0.8f: return 2f;
+            case > 0.7f: return 1.5f;
+            case > 0.6f: return 1f;
+            default: return 0;
+        }
+    }
 
-    // private float EvaluateTentaclesNumber()
-    // {
-    //     int legsBits = Utils.BitToInt(genome[4], genome[5]);
-    //     switch (legsBits)
-    //     {
-    //         case (3): return 1.75f;
-    //         case (2): return 3f;
-    //         case (1): return 3.5f;
-    //         case (0): return 1.75f;
-    //         default: return 0;
-    //     }
-    // }
+    private float EvaluateBlue()
+    {
+        switch (dna.blue)
+        {
+            case > 0.9f: return 2f;
+            case > 0.8f: return 1.5f;
+            case > 0.7f: return 1f;
+            default: return 0;
+        }
+    }
 
-    // private float EvaluateCourbe()
-    // {
-    //     int courbeBits = Utils.BitToInt(genome[8], genome[9]);
-    //     switch (courbeBits)
-    //     {
-    //         case (3): return 3f;
-    //         case (2): return 1.5f;
-    //         case (1): return 2.5f;
-    //         case (0): return 3.5f;
-    //         default: return 0;
-    //     }
-    // }
+    private float EvaluateSize()
+    {
+        switch (dna.size)
+        {
+            case > 0.8f: return 0;
+            case < 0.2f: return 0;
+            case > 0.6f: return 1f;
+            case < 0.4f: return 1f;
+            default: return 2f;
+        }
+    }
+
+    private float EvaluateShape()
+    {
+        float shapeFitness = 0f;
+        if (dna.bodyShape == dna.headShape) shapeFitness += 2f;
+        if (dna.bodyShape == dna.earShape) shapeFitness += 1f;
+        return shapeFitness;
+    }
 }
