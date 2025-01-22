@@ -53,7 +53,7 @@ public class CreatureGenerator : MonoBehaviour
         earNumber = creature.dna.earNumber;
     }
 
-    private Vector3 CreateCreatureModel(Vector3 initialPosition, GameObject creatureModel)
+    private void CreateCreatureModel(Vector3 initialPosition, GameObject creatureModel)
     {
         // Body
         Vector3 bodyPosition = initialPosition;
@@ -79,8 +79,6 @@ public class CreatureGenerator : MonoBehaviour
 
         // Eyes
         CreateEyes(eyePrefab, headPosition, creatureModel);
-
-        return headPosition;
     }
 
     private void CreateEars(GameObject prefab, Vector3 position, GameObject creatureModel)
@@ -106,12 +104,14 @@ public class CreatureGenerator : MonoBehaviour
         }
     }
 
-    private void CreateBodyPart(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel)
+    private GameObject CreateBodyPart(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel)
     {
         GameObject body = Instantiate(prefab, position, Quaternion.identity);
         body.transform.localScale = new Vector3(size, size, size);
+        body.transform.position = position + new Vector3(0, size / 2, 0);
         body.GetComponent<Renderer>().material.color = color;
         body.transform.SetParent(creatureModel.transform);
+        return body;
     }
 
     private void CreateEyes(GameObject eyePrefab, Vector3 headPosition, GameObject creatureModel)
