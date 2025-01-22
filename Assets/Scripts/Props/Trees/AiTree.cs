@@ -24,51 +24,43 @@ public class AiTree : MonoBehaviour
 
     public List<GameObject> GetTreeMesh() => treeMesh;
 
-    private struct TransformInfo
-    {
+    private struct TransformInfo {
         public Vector3 Position;
         public Quaternion Rotation;
 
-        public TransformInfo(Vector3 position, Quaternion rotation)
-        {
+        public TransformInfo(Vector3 position, Quaternion rotation) {
             Position = position;
             Rotation = rotation;
         }
     }
 
-    public void DestroyOriginalTreeMesh()
-    {
+    public void DestroyOriginalTreeMesh() {
         Destroy(branches);
         Destroy(leaves);
     }
 
-    public void DestroyTree()
-    {
-        foreach (var mesh in treeMesh)
-        {
-            Destroy(mesh);
-        }
+    public void DestroyTree() {
+        foreach (var mesh in treeMesh) Destroy(mesh);
     }
 
-    public void SetMaterials(Material branch, Material leaf)
-    {
+    public void SetMaterials(Material branch, Material leaf) {
         branchMaterial = branch;
         leafMaterial = leaf;
     }
 
-    public void Generate(Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, int treeNb)
-    {
+    public void Generate(Vector2 pos, Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, int treeNb) {
         branches = new GameObject("Branches");
         leaves = new GameObject("Leaves");
 
         var randomPosition = new Vector3(
-            Random.Range(0, size.x),
+            size.x + Random.Range(0, pos.x),
             0,
-            Random.Range(0, size.y)
+            size.y + Random.Range(0, pos.y)
         );
         if (Terrain.activeTerrain != null) randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
 
-        DrawTreeAt(randomPosition, lSystemString, lSystemLength, lSystemAngle);
+        //TODO give proper position afterward
+        DrawTreeAt(Vector3.zero, lSystemString, lSystemLength, lSystemAngle);
         CombineTreeMesh(treeNb);
         DestroyOriginalTreeMesh();
     }
@@ -153,18 +145,14 @@ public class AiTree : MonoBehaviour
 
     private void CombineTreeMesh(int treeNb)
     {
-        // Get branches and leaves objects
         string newBranchesName = "Tree" + treeNb + "-Branches";
         List<GameObject> branchObjects = CombineMeshes(branches, branchMaterial, newBranchesName, null);
         string newLeavesName = "Tree" + treeNb + "-Leaves";
         List<GameObject> leavesObjects = CombineMeshes(leaves, leafMaterial, newLeavesName, null);
 
-        // Get the entire tree's mesh
-        treeMesh = branchObjects; // add the branches
-        foreach (var obj in leavesObjects) // then the leaves
-        {
+        treeMesh = branchObjects;
+        foreach (var obj in leavesObjects)
             treeMesh.Add(obj);
-        }
     }
 
     private List<GameObject> CombineMeshes(GameObject parent, Material material, string newMeshName, Transform newParent)

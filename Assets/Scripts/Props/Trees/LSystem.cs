@@ -46,31 +46,21 @@ public class LSystem : MonoBehaviour
     {
         string result = axiom;
 
-        for (int i = 0; i < iterations; i++)
-        {
+        for (int i = 0; i < iterations; i++) {
             string next = "";
-
-            foreach (char c in result)
-            {
+            foreach (char c in result) {
                 bool replaced = false;
-
-                foreach (var rule in rules)
-                {
-                    if (c == rule.symbol)
-                    {
+                foreach (var rule in rules) {
+                    if (c == rule.symbol) {
                         next += rule.replacement;
                         replaced = true;
                         break;
                     }
                 }
-
-                if (!replaced)
-                    next += c.ToString();
+                if (!replaced) next += c.ToString();
             }
-
             result = next;
         }
-
         return result;
     }
 }

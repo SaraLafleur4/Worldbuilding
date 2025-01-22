@@ -153,8 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a16d637783e3c3199a505e3061125b74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: {x: 513, y: 210, z: 513}
-  scale: 2
+  size: {x: 513, y: 101, z: 513}
+  scale: 4.43
   seed: {x: 940.41516, y: -256.32968}
 --- !u!154 &325344141
 TerrainCollider:
@@ -1214,8 +1214,8 @@ MonoBehaviour:
   leafTexture: {fileID: 0}
   leafMaterial: {fileID: 2100000, guid: dbc4493234793914a964c46d7eadee83, type: 2}
   numberOfOriginalTrees: 10
-  planePos: {x: 250, y: 210}
-  planeSize: {x: 10, y: 10}
+  planePos: {x: 10, y: 10}
+  planeSize: {x: 500, y: 500}
   lSystem: {fileID: 1676945113}
 --- !u!114 &1676945113
 MonoBehaviour:
