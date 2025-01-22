@@ -11,12 +11,16 @@ public class Rocks : MonoBehaviour
 
     public int numberOfRocks = 10;
 
+    public List<GameObject> rocks;
+
     public Vector2 planeAngle = new Vector2();
-    public Vector2 planeSize = new Vector2(10, 10); // Size of the area where rocks will be generated
-    public Vector2 planePos = new Vector2(250, 250); // Base position of the area
+    public Vector2 planeSize = new Vector2(500, 500);
+    public Vector2 planePos = new Vector2(10, 10);
 
     public void GenerateRocks()
     {
+        ClearRocks();
+
         for (int i = 0; i < numberOfRocks; i++)
         {
             GenerateSingleRock();
@@ -27,39 +31,34 @@ public class Rocks : MonoBehaviour
     {
         // List of rock prefabs
         List<GameObject> rockPrefabs = new List<GameObject> { rockPrefab1, rockPrefab2, rockPrefab3 };
-
-        // Randomly select a rock prefab
         GameObject chosenRockPrefab = rockPrefabs[Random.Range(0, rockPrefabs.Count)];
 
         // Calculate a random position within the defined area
         var randomPosition = new Vector3(
-            planeAngle.x + Random.Range(planePos.x, planePos.x + planeSize.x), // X coordinate
+            planePos.x + Random.Range(0, planeSize.x),
             0, // Initial height
-            planeAngle.y + Random.Range(planePos.y, planePos.y + planeSize.y) // Z coordinate
+            planePos.y + Random.Range(0, planeSize.y)
         );
+        if (Terrain.activeTerrain != null) randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
 
-        // Clamp the position to ensure it remains within the defined area
-        randomPosition.x = Mathf.Clamp(randomPosition.x, planeAngle.x, planeAngle.x + planeSize.x);
-        randomPosition.z = Mathf.Clamp(randomPosition.z, planeAngle.y, planeAngle.y + planeSize.y);
-
-        // Set the height based on the terrain
-        randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
-
-        // Get the terrain normal at the generated position
+        // Adjust rotation to terrain
         Vector3 terrainNormal = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(
             (randomPosition.x - Terrain.activeTerrain.transform.position.x) / Terrain.activeTerrain.terrainData.size.x,
             (randomPosition.z - Terrain.activeTerrain.transform.position.z) / Terrain.activeTerrain.terrainData.size.z
         );
-
-        // Calculate the rock's rotation to align with the terrain normal
         Quaternion rotation = Quaternion.FromToRotation(Vector3.up, terrainNormal);
 
-        // Instantiate the rock in the scene with the calculated rotation
-        Instantiate(chosenRockPrefab, randomPosition, rotation);
+        // Create new rock
+        GameObject rock = Instantiate(chosenRockPrefab, randomPosition, rotation);
+        rocks.Add(rock);
     }
 
-    void Update()
+    private void ClearRocks()
     {
-        // Additional logic can be added here if needed on each frame
+        if (rocks != null)
+        {
+            foreach (var rock in rocks) Destroy(rock);
+            rocks.Clear();
+        }
     }
 }
