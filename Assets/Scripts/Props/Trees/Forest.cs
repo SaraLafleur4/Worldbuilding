@@ -23,7 +23,8 @@ public class Forest : MonoBehaviour
     {
         ClearForest();
 
-        for (int i = 0; i < numberOfOriginalTrees; i++) {
+        for (int i = 0; i < numberOfOriginalTrees; i++)
+        {
             GenerateSingleOriginalTree(i + 1);
         }
 
@@ -74,7 +75,8 @@ public class Forest : MonoBehaviour
             0
         );
 
-        foreach (var obj in originalTreeMesh) {
+        foreach (var obj in originalTreeMesh)
+        {
             GameObject duplicatedObj = Instantiate(obj);
             duplicatedObj.transform.position = newTreePosition;
             duplicatedObj.transform.eulerAngles = newTreeRotation;
@@ -95,8 +97,10 @@ public class Forest : MonoBehaviour
             foreach (var tree in originalTrees) tree.DestroyTree();
             originalTrees.Clear();
         }
-        if (parentTrees != null) {
+        if (parentTrees != null)
+        {
             foreach (var tree in parentTrees) Destroy(tree);
+            parentTrees.Clear();
         }
     }
 }
