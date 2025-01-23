@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class Rocks : MonoBehaviour
@@ -50,6 +48,11 @@ public class Rocks : MonoBehaviour
 
         // Create new rock
         GameObject rock = Instantiate(chosenRockPrefab, randomPosition, rotation);
+        if (rock.GetComponent<Collider>() == null)
+        {
+            MeshCollider meshCollider = rock.AddComponent<MeshCollider>();
+            meshCollider.convex = true; // Ensure convex for physics interactions
+        }
         rocks.Add(rock);
     }
 

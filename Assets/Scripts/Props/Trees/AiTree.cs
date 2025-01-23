@@ -24,31 +24,37 @@ public class AiTree : MonoBehaviour
 
     public List<GameObject> GetTreeMesh() => treeMesh;
 
-    private struct TransformInfo {
+    private struct TransformInfo
+    {
         public Vector3 Position;
         public Quaternion Rotation;
 
-        public TransformInfo(Vector3 position, Quaternion rotation) {
+        public TransformInfo(Vector3 position, Quaternion rotation)
+        {
             Position = position;
             Rotation = rotation;
         }
     }
 
-    public void DestroyOriginalTreeMesh() {
+    public void DestroyOriginalTreeMesh()
+    {
         Destroy(branches);
         Destroy(leaves);
     }
 
-    public void DestroyTree() {
+    public void DestroyTree()
+    {
         foreach (var mesh in treeMesh) Destroy(mesh);
     }
 
-    public void SetMaterials(Material branch, Material leaf) {
+    public void SetMaterials(Material branch, Material leaf)
+    {
         branchMaterial = branch;
         leafMaterial = leaf;
     }
 
-    public void Generate(Vector2 pos, Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, int treeNb) {
+    public void Generate(Vector2 pos, Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, int treeNb)
+    {
         branches = new GameObject("Branches");
         leaves = new GameObject("Leaves");
 
@@ -88,6 +94,11 @@ public class AiTree : MonoBehaviour
                     branch.transform.localScale = new Vector3(currentThickness, Vector3.Distance(start, end) / 2, currentThickness);
 
                     if (branchMaterial != null) branch.GetComponent<Renderer>().material = branchMaterial;
+
+                    CapsuleCollider branchCollider = branch.AddComponent<CapsuleCollider>();
+                    branchCollider.height = Vector3.Distance(start, end);
+                    branchCollider.radius = currentThickness / 2;
+                    branchCollider.direction = 1;
 
                     position = end;
                     break;
@@ -153,6 +164,14 @@ public class AiTree : MonoBehaviour
         treeMesh = branchObjects;
         foreach (var obj in leavesObjects)
             treeMesh.Add(obj);
+
+        GameObject treeColliderObject = new GameObject("TreeCollider");
+        treeColliderObject.transform.position = branches.transform.position;
+
+        CapsuleCollider treeCollider = treeColliderObject.AddComponent<CapsuleCollider>();
+        treeCollider.center = Vector3.zero;
+        treeCollider.height = 10f;
+        treeCollider.radius = 2f;
     }
 
     private List<GameObject> CombineMeshes(GameObject parent, Material material, string newMeshName, Transform newParent)
