@@ -3,9 +3,9 @@ using UnityEngine;
 public class Creature
 {
     public DNA dna;
+    public GameObject model;
     public CreatureGenerator creatureGenerator;
     public FitnessLevel fitness;
-    public GameObject model;
 
     public Creature(CreatureGenerator generator)
     {
@@ -13,6 +13,9 @@ public class Creature
         creatureGenerator = generator;
         fitness = EvaluateFitness();
         model = creatureGenerator.GenerateModel(this);
+
+        var movement = model.AddComponent<CreatureMovement>();
+        movement.Initialize(this);
     }
 
     public Creature(DNA generatedDNA, CreatureGenerator generator)
@@ -21,6 +24,9 @@ public class Creature
         creatureGenerator = generator;
         EvaluateFitness();
         model = creatureGenerator.GenerateModel(this);
+
+        var movement = model.AddComponent<CreatureMovement>();
+        movement.Initialize(this);
     }
 
     public void DisplayCreature(Vector3 startingPosition, Vector2 spawningAreaAngle, Vector2 spawningAreaSize)

@@ -1,4 +1,5 @@
 // using System.Numerics;
+using UnityEditor;
 using UnityEngine;
 
 public class CreatureMovement : MonoBehaviour
@@ -8,8 +9,8 @@ public class CreatureMovement : MonoBehaviour
     private float moveSpeed;
     private float rotationSpeed = 5f;
     private float wanderRadius = 50f;
-    private float minRestTime = 5f;
-    private float maxRestTime = 15f;
+    private float minRestTime = 2f;
+    private float maxRestTime = 8f;
     private float restTimer;
     private bool isResting;
     private float groundCheckDistance = 0.1f;
@@ -23,6 +24,7 @@ public class CreatureMovement : MonoBehaviour
     {
         this.creature = creature;
         moveSpeed = Mathf.Lerp(5f, 2f, creature.dna.size);
+        restTimer = Random.Range(minRestTime, maxRestTime);
         SetNewRandomTarget();
     }
 
@@ -98,7 +100,8 @@ public class CreatureMovement : MonoBehaviour
     private void CheckTargetReached()
     {
         float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
-        if (distanceToTarget < 1f)
+        Debug.Log($"distance to target = {distanceToTarget}");
+        if (distanceToTarget < 10f)
         {
             isResting = true;
             restTimer = Random.Range(minRestTime, maxRestTime);
