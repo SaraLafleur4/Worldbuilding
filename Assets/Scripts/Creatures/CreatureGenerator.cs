@@ -27,8 +27,10 @@ public class CreatureGenerator : MonoBehaviour
         GameObject creatureModel = new GameObject("Creature");
         creatureModel.transform.position = initialPosition;
 
-        InitializeVariables(creature);
+        CreatureMovement creatureMovement = creatureModel.AddComponent<CreatureMovement>();
+        creatureMovement.Initialize(creature);
 
+        InitializeVariables(creature);
         CreateCreatureModel(initialPosition, creatureModel);
 
         return creatureModel;
