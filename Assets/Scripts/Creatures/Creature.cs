@@ -16,6 +16,8 @@ public class Creature
 
         var movement = model.AddComponent<CreatureMovement>();
         movement.Initialize(this);
+
+        AddCollider();
     }
 
     public Creature(DNA generatedDNA, CreatureGenerator generator)
@@ -27,6 +29,19 @@ public class Creature
 
         var movement = model.AddComponent<CreatureMovement>();
         movement.Initialize(this);
+
+        AddCollider();
+    }
+
+    private void AddCollider()
+    {
+        SphereCollider collider = model.AddComponent<SphereCollider>();
+        collider.radius = Mathf.Lerp(0.5f, 2.5f, Mathf.InverseLerp(1f, 5f, dna.size)); // Adjust radius based on size
+        collider.isTrigger = false; // Ensure it reacts to collisions
+
+        Rigidbody rb = model.AddComponent<Rigidbody>();
+        rb.mass = Mathf.Lerp(1f, 5f, Mathf.InverseLerp(1f, 5f, dna.size)); // Scale mass with size
+        rb.constraints = RigidbodyConstraints.FreezeRotation; // Prevent tipping over
     }
 
     public void DisplayCreature(Vector3 startingPosition, Vector2 spawningAreaAngle, Vector2 spawningAreaSize)

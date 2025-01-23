@@ -24,7 +24,8 @@ public class CreatureMovement : MonoBehaviour
     public void Initialize(Creature creature)
     {
         this.creature = creature;
-        moveSpeed = Mathf.Lerp(5f, 2f, Mathf.InverseLerp(1f, 5f, creature.dna.size)); // Adjusted for size range
+        moveSpeed = Mathf.Lerp(5f, 2f, creature.dna.size / 5); // Adjusted for size range
+        // Mathf.InverseLerp(1f, 5f, creature.dna.size)
         restTimer = Random.Range(minRestTime, maxRestTime);
         SetNewRandomTarget();
     }
@@ -41,6 +42,7 @@ public class CreatureMovement : MonoBehaviour
 
         idleTime += Time.deltaTime;
 
+        AvoidObstacles();
         MoveCreature();
         CheckTargetReached();
 
@@ -84,8 +86,8 @@ public class CreatureMovement : MonoBehaviour
 
             // Adjust movement speed based on slope
             float sizeFactor = Mathf.Lerp(1f, 2f, creature.dna.size / 5f); // Boost for larger creatures
-            float currentSpeed = moveSpeed * (1f - (slopeAngle / maxSlopeAngle) * (slopePenalty * 0.5f));
-            currentSpeed = Mathf.Max(currentSpeed, 0.5f); // Ensure minimum speed
+            float currentSpeed = moveSpeed * sizeFactor * (1f - (slopeAngle / maxSlopeAngle) * (slopePenalty * 0.5f));
+            currentSpeed = Mathf.Max(currentSpeed, 1f); // Ensure minimum speed
 
             if (slopeAngle > maxSlopeAngle)
             {
@@ -100,9 +102,9 @@ public class CreatureMovement : MonoBehaviour
             // Adjust height based on terrain
             float terrainHeight = Terrain.activeTerrain.SampleHeight(transform.position);
             transform.position = new Vector3(
-                transform.position.x,
+                Mathf.Clamp(transform.position.x, 0f, Terrain.activeTerrain.terrainData.size.x),
                 terrainHeight + heightOffset + (creature.dna.size * 0.1f), // Increase offset proportional to size
-                transform.position.z
+                Mathf.Clamp(transform.position.z, 0f, Terrain.activeTerrain.terrainData.size.z)
             );
 
             // Rotate to face movement direction while aligning with terrain
@@ -145,16 +147,65 @@ public class CreatureMovement : MonoBehaviour
 
     private void SetNewRandomTarget()
     {
-        // Get random point within wanderRadius
-        Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
-        targetPosition = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
+        // Get the terrain bounds
+        Terrain terrain = Terrain.activeTerrain;
+        float terrainWidth = terrain.terrainData.size.x;
+        float terrainHeight = terrain.terrainData.size.z;
 
-        // Ensure target is within terrain bounds and adjust height
-        if (Terrain.activeTerrain != null)
+        // Generate a truly random point within the terrain bounds
+        float randomX = Random.Range(0f, terrainWidth);
+        float randomZ = Random.Range(0f, terrainHeight);
+
+        // Adjust the target height based on the terrain
+        float randomY = terrain.SampleHeight(new Vector3(randomX, 0f, randomZ)) + heightOffset;
+
+        targetPosition = new Vector3(randomX, randomY, randomZ);
+    }
+
+    private void AvoidObstacles()
+    {
+        float detectionRadius = Mathf.Lerp(2f, 5f, Mathf.InverseLerp(1f, 5f, creature.dna.size));
+        Collider[] nearbyObjects = Physics.OverlapSphere(transform.position, detectionRadius);
+
+        Vector3 avoidanceForce = Vector3.zero;
+
+        foreach (var obj in nearbyObjects)
         {
-            targetPosition.x = Mathf.Clamp(targetPosition.x, wanderRadius, Terrain.activeTerrain.terrainData.size.x - wanderRadius);
-            targetPosition.z = Mathf.Clamp(targetPosition.z, wanderRadius, Terrain.activeTerrain.terrainData.size.z - wanderRadius);
-            targetPosition.y = Terrain.activeTerrain.SampleHeight(targetPosition) + heightOffset;
+            if (obj.gameObject != gameObject) // Avoid self
+            {
+                Vector3 directionAway = transform.position - obj.transform.position;
+                float distance = directionAway.magnitude;
+                float forceMultiplier = Mathf.Clamp01(1f - (distance / detectionRadius));
+
+                avoidanceForce += directionAway.normalized * forceMultiplier;
+            }
         }
+
+        if (avoidanceForce.magnitude > 0.01f)
+        {
+            // Apply avoidance
+            Vector3 newDirection = (targetPosition - transform.position + avoidanceForce).normalized;
+            MoveInDirection(newDirection);
+        }
+        else
+        {
+            MoveInDirection((targetPosition - transform.position).normalized);
+        }
+    }
+
+    private void MoveInDirection(Vector3 direction)
+    {
+        float terrainHeight = Terrain.activeTerrain.SampleHeight(transform.position);
+        transform.position += direction * moveSpeed * Time.deltaTime;
+
+        transform.position = new Vector3(
+            Mathf.Clamp(transform.position.x, 0f, Terrain.activeTerrain.terrainData.size.x),
+            terrainHeight + heightOffset,
+            Mathf.Clamp(transform.position.z, 0f, Terrain.activeTerrain.terrainData.size.z)
+        );
+
+        // Rotate creature to face movement direction
+        Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
     }
 }
