@@ -211,7 +211,7 @@ public class PopulationManager : MonoBehaviour
         offspringDNA.blue = Random.Range(0, 10) < 5 ? parent1.blue : parent2.blue;
         offspringDNA.earNumber = Random.Range(0, 10) < 5 ? parent1.earNumber : parent2.earNumber;
         // NO Crossover: random health and life span
-        offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
+        // offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
         offspringDNA.timeToLive = Random.Range(5.0f, 30.0f);
         return offspringDNA;
     }

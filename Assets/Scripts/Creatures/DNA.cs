@@ -10,7 +10,7 @@ public class DNA
     public float green;
     public float blue;
     public int earNumber;               // creature number of ears
-    public float health;                // creature health
+    public float health = 100f;         // creature health
     public float timeToLive;            // creature life span
 
     public bool isHealthy() => health > 0; // TODO: use health for something
@@ -25,7 +25,7 @@ public class DNA
         green = Random.Range(0.0f, 1.0f);
         blue = Random.Range(0.0f, 1.0f);
         earNumber = Random.Range(0, 4);
-        health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
+        // health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
         timeToLive = Random.Range(5.0f, 30.0f);
     }
 
