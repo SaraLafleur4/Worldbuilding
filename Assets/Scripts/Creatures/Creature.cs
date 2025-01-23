@@ -4,8 +4,9 @@ public class Creature
 {
     public DNA dna;
     public GameObject model;
-    public CreatureGenerator creatureGenerator;
+    private CreatureGenerator creatureGenerator;
     public FitnessLevel fitness;
+    private Material creatureMaterial;
 
     public Creature(CreatureGenerator generator)
     {
@@ -18,6 +19,8 @@ public class Creature
         movement.Initialize(this);
 
         AddCollider();
+
+        creatureMaterial = model.GetComponentInChildren<Renderer>().material;
     }
 
     public Creature(DNA generatedDNA, CreatureGenerator generator)
@@ -31,6 +34,8 @@ public class Creature
         movement.Initialize(this);
 
         AddCollider();
+
+        creatureMaterial = model.GetComponentInChildren<Renderer>().material;
     }
 
     private void AddCollider()
@@ -89,6 +94,7 @@ public class Creature
         float totalFitness = 0f;
         totalFitness += EvaluateColor();
         totalFitness += EvaluateSize();
+        totalFitness += EvaluateShape();
         return totalFitness;
     }
 

@@ -16,7 +16,6 @@ public class PopulationManager : MonoBehaviour
     private Vector3 startingPosition = Vector3.zero;
     private Vector2 spawningAreaAngle = new Vector2(10f, 10f);
     private Vector2 spawningAreaSize = new Vector2(490f, 490f);
-    private Vector2 breedingDisplacement = new Vector2(50f, 50f);
 
     private Coroutine breedingCoroutine;
     public CreatureGenerator creatureGenerator;
@@ -71,6 +70,8 @@ public class PopulationManager : MonoBehaviour
             {
                 Destroy(population[i].model);
                 population.RemoveAt(i);
+
+                UpdateCreatureHealthAndOpacity(population[i]);
             }
         }
 
@@ -131,15 +132,12 @@ public class PopulationManager : MonoBehaviour
 
         foreach (var creature in population)
         {
-            float timeToLive = creature.dna.timeToLive; // TODO: should depend on health
-
-            if (timeToLive > 15) possibleParents.Add(creature);
+            if (creature.dna.timeToLive > 15) possibleParents.Add(creature);    // TODO: should depend on health
         }
 
         return possibleParents;
     }
 
-    // /!\ PARENT SELECTION SHOULD BEE UPDATED LATER ON /!\
     private Creature SelectParent(List<Creature> possibleParents)
     {
         List<int> weights = new List<int>();
@@ -211,8 +209,21 @@ public class PopulationManager : MonoBehaviour
         offspringDNA.blue = Random.Range(0, 10) < 5 ? parent1.blue : parent2.blue;
         offspringDNA.earNumber = Random.Range(0, 10) < 5 ? parent1.earNumber : parent2.earNumber;
         // NO Crossover: random health and life span
-        // offspringDNA.health = (uint)Random.Range(1.0f, 10.0f); // TODO: use health for something
-        offspringDNA.timeToLive = Random.Range(5.0f, 30.0f);
+        offspringDNA.health = Random.Range(80.0f, 100.0f);
         return offspringDNA;
+    }
+
+    private void UpdateCreatureHealthAndOpacity(Creature creature)
+    {
+        creature.dna.timeToLive -= (!creature.dna.isHealthy) ? 2 : 0;
+
+        var renderer = creature.model.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            Material material = renderer.material;
+            Color color = material.color;
+            color.a = creature.dna.health / 100f;
+            material.color = color;
+        }
     }
 }

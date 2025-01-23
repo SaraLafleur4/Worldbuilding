@@ -8,7 +8,6 @@ public class CreatureMovement : MonoBehaviour
     private Vector3 targetPosition;
     private float moveSpeed;
     private float rotationSpeed = 5f;
-    private float wanderRadius = 50f;
     private float minRestTime = 1f;
     private float maxRestTime = 5f;
     private float restTimer;
@@ -24,8 +23,8 @@ public class CreatureMovement : MonoBehaviour
     public void Initialize(Creature creature)
     {
         this.creature = creature;
+        UpdateOpacity(this.creature.dna.health);
         moveSpeed = Mathf.Lerp(5f, 2f, creature.dna.size / 5); // Adjusted for size range
-        // Mathf.InverseLerp(1f, 5f, creature.dna.size)
         restTimer = Random.Range(minRestTime, maxRestTime);
         SetNewRandomTarget();
     }
@@ -33,6 +32,8 @@ public class CreatureMovement : MonoBehaviour
     private void Update()
     {
         if (creature == null) return;
+
+        UpdateOpacity(this.creature.dna.health);
 
         if (isResting)
         {
@@ -53,6 +54,22 @@ public class CreatureMovement : MonoBehaviour
         }
 
         ConsumeEnergy();
+    }
+
+    private void UpdateOpacity(float health)
+    {
+        float opacity = health / 100f;
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer != null)
+            {
+                Color currentColor = renderer.material.color;
+                currentColor.a = opacity; // Adjust alpha channel
+                renderer.material.color = currentColor;
+            }
+        }
     }
 
     private void HandleResting()

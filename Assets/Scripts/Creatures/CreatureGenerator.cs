@@ -45,9 +45,9 @@ public class CreatureGenerator : MonoBehaviour
         earSize = 0.2f * scaleFactor;
         eyeSize = 0.25f * scaleFactor;
 
-        bodyColor = new Color(creature.dna.red, creature.dna.green, creature.dna.blue);
-        headColor = new Color(creature.dna.red, creature.dna.green / 2, creature.dna.blue / 4);
-        earColor = new Color(creature.dna.red / 2, creature.dna.green, creature.dna.blue);
+        bodyColor = new Color(creature.dna.red, creature.dna.green, creature.dna.blue, 1f);
+        headColor = new Color(creature.dna.red, creature.dna.green / 2, creature.dna.blue / 4, 1f);
+        earColor = new Color(creature.dna.red / 2, creature.dna.green, creature.dna.blue, 1f);
 
         earNumber = creature.dna.earNumber;
     }
@@ -55,8 +55,8 @@ public class CreatureGenerator : MonoBehaviour
     private void CreateCreatureModel(Vector3 initialPosition, GameObject creatureModel)
     {
         // Body
-        Vector3 bodyPosition = initialPosition;
-        CreateBodyPart(bodyPrefab, bodyPosition, bodySize, bodyColor, creatureModel);
+        Vector3 bodyPosition = initialPosition + new Vector3(0, bodySize / 2, 0);
+        CreateBodyPart(bodyPrefab, bodyPosition, bodySize, bodyColor, creatureModel, true);
 
         // Head
         Vector3 headPosition = bodyPosition + new Vector3(0, (bodySize / 2 + headSize / 2) * 0.8f, 0);
@@ -103,11 +103,10 @@ public class CreatureGenerator : MonoBehaviour
         }
     }
 
-    private GameObject CreateBodyPart(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel)
+    private GameObject CreateBodyPart(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel, bool isBody = false)
     {
         GameObject body = Instantiate(prefab, position, Quaternion.identity);
         body.transform.localScale = new Vector3(size, size, size);
-        body.transform.position = position + new Vector3(0, size / 2, 0);
         body.GetComponent<Renderer>().material.color = color;
         body.transform.SetParent(creatureModel.transform);
         return body;
