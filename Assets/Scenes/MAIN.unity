@@ -174,7 +174,7 @@ TerrainCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_TerrainData: {fileID: 0}
+  m_TerrainData: {fileID: 15600000, guid: 958ce2de0c639276c83a1aaa2c6b629e, type: 2}
   m_EnableTreeColliders: 1
 --- !u!218 &325344142
 Terrain:
@@ -185,7 +185,7 @@ Terrain:
   m_GameObject: {fileID: 325344139}
   m_Enabled: 1
   serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: 78b1d7d063cd34d42bea0829859f2f58, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: 958ce2de0c639276c83a1aaa2c6b629e, type: 2}
   m_TreeDistance: 5000
   m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5
@@ -1264,6 +1264,7 @@ MonoBehaviour:
   rockPrefab2: {fileID: 2602975220198116835, guid: 10038933d2c22814dbaff12551a38547, type: 3}
   rockPrefab3: {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
   numberOfRocks: 100
+  rocks: []
   planeAngle: {x: 10, y: 10}
   planeSize: {x: 500, y: 500}
   planePos: {x: 10, y: 10}
