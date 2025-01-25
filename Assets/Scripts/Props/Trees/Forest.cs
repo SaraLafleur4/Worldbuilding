@@ -19,6 +19,7 @@ public class Forest : MonoBehaviour
     public LSystem lSystem;
     private List<GameObject> parentTrees = new List<GameObject>();
 
+    // Generates the entire forest by creating original trees and their duplicates
     public void GenerateForest()
     {
         ClearForest();
@@ -42,6 +43,7 @@ public class Forest : MonoBehaviour
         }
     }
 
+    // Generates a single original tree using L-System rules
     private void GenerateSingleOriginalTree(int treeNb)
     {
         lSystem.SetupLSystemForSingleTree();
@@ -59,6 +61,7 @@ public class Forest : MonoBehaviour
         originalTrees.Add(tree);
     }
 
+    // Generates a duplicate tree based on an original tree's mesh
     private void GenerateDuplicateTreeFromOriginal(List<GameObject> originalTreeMesh, int originalTreeNb, int duplicateTreeNb)
     {
         List<GameObject> newTreeComponents = new List<GameObject>();
@@ -90,6 +93,7 @@ public class Forest : MonoBehaviour
         parentTrees.Add(duplicateParent);
     }
 
+    // Clears the existing forest by destroying all trees and their duplicates
     private void ClearForest()
     {
         if (originalTrees != null)

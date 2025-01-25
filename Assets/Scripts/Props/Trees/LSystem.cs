@@ -22,8 +22,10 @@ public class LSystem : MonoBehaviour
     }
 
     private string currentString;
+    // Returns the current L-System string
     public string getCurrentString() => currentString;
 
+    // Configures the L-System with random parameters for generating a single tree
     public void SetupLSystemForSingleTree()
     {
         iterations = Random.Range(1, 5);
@@ -42,16 +44,21 @@ public class LSystem : MonoBehaviour
         currentString = GenerateLSystem(axiom, iterations);
     }
 
+    // Generates the final L-System string based on the axiom, rules, and number of iterations
     public string GenerateLSystem(string axiom, int iterations)
     {
         string result = axiom;
 
-        for (int i = 0; i < iterations; i++) {
+        for (int i = 0; i < iterations; i++)
+        {
             string next = "";
-            foreach (char c in result) {
+            foreach (char c in result)
+            {
                 bool replaced = false;
-                foreach (var rule in rules) {
-                    if (c == rule.symbol) {
+                foreach (var rule in rules)
+                {
+                    if (c == rule.symbol)
+                    {
                         next += rule.replacement;
                         replaced = true;
                         break;

@@ -20,6 +20,7 @@ public class CreatureMovement : MonoBehaviour
     private float slopePenalty = 0.5f;
     private float idleTime = 0f;
 
+    // Initializes creature's movement settings and target position
     public void Initialize(Creature creature)
     {
         this.creature = creature;
@@ -29,6 +30,7 @@ public class CreatureMovement : MonoBehaviour
         SetNewRandomTarget();
     }
 
+    // Updates the creature's state every frame, including movement, obstacle avoidance, and energy consumption
     private void Update()
     {
         if (creature == null) return;
@@ -56,6 +58,7 @@ public class CreatureMovement : MonoBehaviour
         ConsumeEnergy();
     }
 
+    // Adjusts the creature's opacity based on its health
     private void UpdateOpacity(float health)
     {
         float opacity = health / 100f;
@@ -72,6 +75,7 @@ public class CreatureMovement : MonoBehaviour
         }
     }
 
+    // Handles the resting behavior, recovering health and managing rest time
     private void HandleResting()
     {
         restTimer -= Time.deltaTime;
@@ -87,6 +91,7 @@ public class CreatureMovement : MonoBehaviour
         }
     }
 
+    // Moves the creature toward its target, considering slope and terrain adjustments
     private void MoveCreature()
     {
         // Calculate direction to target and reset idle timer if movement occurs
@@ -138,6 +143,7 @@ public class CreatureMovement : MonoBehaviour
         }
     }
 
+    // Checks if the creature has reached its target and triggers resting if so
     private void CheckTargetReached()
     {
         float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
@@ -149,6 +155,7 @@ public class CreatureMovement : MonoBehaviour
         }
     }
 
+    // Consumes energy based on the creature's size, speed, and terrain slope
     private void ConsumeEnergy()
     {
         float slopeAngle = Vector3.Angle(groundNormal, Vector3.up);
@@ -162,6 +169,7 @@ public class CreatureMovement : MonoBehaviour
         if (creature.dna.health < 0f) creature.dna.health = 0f;
     }
 
+    // Sets a new random target position within the terrain bounds
     private void SetNewRandomTarget()
     {
         // Get the terrain bounds
@@ -179,6 +187,7 @@ public class CreatureMovement : MonoBehaviour
         targetPosition = new Vector3(randomX, randomY, randomZ);
     }
 
+    // Avoids nearby obstacles by adjusting movement direction
     private void AvoidObstacles()
     {
         float detectionRadius = Mathf.Lerp(2f, 5f, Mathf.InverseLerp(1f, 5f, creature.dna.size));
@@ -210,6 +219,7 @@ public class CreatureMovement : MonoBehaviour
         }
     }
 
+    // Moves the creature in a specific direction while adjusting its position and rotation
     private void MoveInDirection(Vector3 direction)
     {
         float terrainHeight = Terrain.activeTerrain.SampleHeight(transform.position);

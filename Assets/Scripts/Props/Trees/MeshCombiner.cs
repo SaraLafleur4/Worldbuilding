@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class MeshCombiner : MonoBehaviour
 {
+    // Combines all meshes under a parent transform into fewer objects and returns the list of combined objects
     public List<GameObject> CombineMeshes(Transform parentTransform, Material meshMaterial, string newMeshName, Transform newParent = null)
     {
         List<GameObject> newObjectList = new List<GameObject>();
@@ -46,6 +47,7 @@ public class MeshCombiner : MonoBehaviour
         return newObjectList;
     }
 
+    // Creates a single combined mesh object from the provided list of CombineInstance and assigns it a material
     private GameObject CreateCombinedMesh(Transform newParent, List<CombineInstance> combine, Material meshMaterial, string newMeshName)
     {
         Mesh combinedMesh = new Mesh();
@@ -61,6 +63,7 @@ public class MeshCombiner : MonoBehaviour
         return combinedObject;
     }
 
+    // Deletes the original mesh objects after combining them
     private void DeleteOriginalMeshes(List<GameObject> objectsToDelete)
     {
         foreach (var obj in objectsToDelete)

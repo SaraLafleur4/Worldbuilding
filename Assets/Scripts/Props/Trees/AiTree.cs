@@ -22,8 +22,10 @@ public class AiTree : MonoBehaviour
     private GameObject leaves;
     private List<GameObject> treeMesh; // branches + leaves
 
+    // Retrieves the list of generated tree meshes
     public List<GameObject> GetTreeMesh() => treeMesh;
 
+    // Helper struct to store position and rotation information
     private struct TransformInfo
     {
         public Vector3 Position;
@@ -36,23 +38,27 @@ public class AiTree : MonoBehaviour
         }
     }
 
+    // Destroys the original branch and leaf objects
     public void DestroyOriginalTreeMesh()
     {
         Destroy(branches);
         Destroy(leaves);
     }
 
+    // Destroys all tree meshes
     public void DestroyTree()
     {
         foreach (var mesh in treeMesh) Destroy(mesh);
     }
 
+    // Sets the materials for branches and leaves
     public void SetMaterials(Material branch, Material leaf)
     {
         branchMaterial = branch;
         leafMaterial = leaf;
     }
 
+    // Generates a tree based on L-System parameters
     public void Generate(Vector2 pos, Vector2 size, string lSystemString, float lSystemLength, float lSystemAngle, int treeNb)
     {
         branches = new GameObject("Branches");
@@ -65,12 +71,13 @@ public class AiTree : MonoBehaviour
         );
         if (Terrain.activeTerrain != null) randomPosition.y = Terrain.activeTerrain.SampleHeight(randomPosition);
 
-        //TODO give proper position afterward
+        // Draws the tree and combines its meshes
         DrawTreeAt(Vector3.zero, lSystemString, lSystemLength, lSystemAngle);
         CombineTreeMesh(treeNb);
         DestroyOriginalTreeMesh();
     }
 
+    // Draws a tree based on the L-System string at a given position
     public void DrawTreeAt(Vector3 basePosition, string lSystemString, float lSystemLength, float lSystemAngle)
     {
         Stack<TransformInfo> transformStack = new Stack<TransformInfo>();
@@ -83,7 +90,7 @@ public class AiTree : MonoBehaviour
         {
             switch (c)
             {
-                case 'F':
+                case 'F': // Draws a branch
                     Vector3 start = position;
                     Vector3 end = start + (rotation * Vector3.up * lSystemLength);
 
@@ -102,41 +109,43 @@ public class AiTree : MonoBehaviour
 
                     position = end;
                     break;
-                case '+':
+                case '+': // Rotates clockwise on the Z-axis
                     rotation *= Quaternion.Euler(0, 0, lSystemAngle);
                     break;
-                case '-':
+                case '-': // Rotates counterclockwise on the Z-axis
                     rotation *= Quaternion.Euler(0, 0, -lSystemAngle);
                     break;
-                case '&':
+                case '&': // Rotates upward on the X-axis
                     rotation *= Quaternion.Euler(lSystemAngle, 0, 0);
                     break;
-                case '^':
+                case '^': // Rotates downward on the X-axis
                     rotation *= Quaternion.Euler(-lSystemAngle, 0, 0);
                     break;
-                case '<':
+                case '<': // Rotates clockwise on the Y-axis
                     rotation *= Quaternion.Euler(0, lSystemAngle, 0);
                     break;
-                case '>':
+                case '>': // Rotates counterclockwise on the Y-axis
                     rotation *= Quaternion.Euler(0, -lSystemAngle, 0);
                     break;
-                case '[':
+                case '[': // Saves the current transform and thickness
                     transformStack.Push(new TransformInfo(position, rotation));
                     thicknessStack.Push(currentThickness);
                     currentThickness *= thicknessReduction;
                     break;
-                case ']':
+                case ']': // Restores the saved transform and thickness
                     TransformInfo t = transformStack.Pop();
                     position = t.Position;
                     rotation = t.Rotation;
                     currentThickness = thicknessStack.Pop();
 
+                    // Adds a leaf at the restored position
                     CreateLeaf(position, rotation);
                     break;
             }
         }
     }
 
+    // Creates a leaf at the specified position and rotation
     private void CreateLeaf(Vector3 position, Quaternion rotation)
     {
         GameObject leaf = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -154,6 +163,7 @@ public class AiTree : MonoBehaviour
         if (leafMaterial != null) leaf.GetComponent<Renderer>().material = leafMaterial;
     }
 
+    // Combines branch and leaf meshes into single meshes for performance optimization
     private void CombineTreeMesh(int treeNb)
     {
         string newBranchesName = "Tree" + treeNb + "-Branches";
@@ -165,6 +175,7 @@ public class AiTree : MonoBehaviour
         foreach (var obj in leavesObjects)
             treeMesh.Add(obj);
 
+        // Adds a collider around the entire tree
         GameObject treeColliderObject = new GameObject("TreeCollider");
         treeColliderObject.transform.position = branches.transform.position;
 
@@ -174,6 +185,7 @@ public class AiTree : MonoBehaviour
         treeCollider.radius = 2f;
     }
 
+    // Combines child meshes into a single mesh for optimization
     private List<GameObject> CombineMeshes(GameObject parent, Material material, string newMeshName, Transform newParent)
     {
         if (parent.transform.childCount == 0) return null;

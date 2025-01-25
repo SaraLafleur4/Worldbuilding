@@ -4,7 +4,9 @@ using UnityEditor;
 [CustomEditor(typeof(TerrainNoiseGeneration))]
 public class TerrainGenEditor : Editor
 {
-    public override void OnInspectorGUI() {
+    // Customizes the inspector GUI for the TerrainNoiseGeneration component
+    public override void OnInspectorGUI()
+    {
         TerrainNoiseGeneration component = (TerrainNoiseGeneration)target;
 
         DrawDefaultInspector();

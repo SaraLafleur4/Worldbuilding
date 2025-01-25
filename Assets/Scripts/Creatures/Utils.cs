@@ -1,4 +1,4 @@
-// Enum representing different shapes
+// Enum representing different shapes for creature body parts
 public enum Shape
 {
     Cube,
@@ -6,7 +6,7 @@ public enum Shape
     Capsule
 }
 
-// Enum representing different fitness levels
+// Enum representing creature's different fitness levels
 public enum FitnessLevel
 {
     Best,

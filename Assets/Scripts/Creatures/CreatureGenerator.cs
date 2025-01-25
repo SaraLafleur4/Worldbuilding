@@ -22,6 +22,7 @@ public class CreatureGenerator : MonoBehaviour
     private float eyeSize;
     private int earNumber;
 
+    // Method to generate the creature's model based on its DNA
     public GameObject GenerateModel(Creature creature)
     {
         GameObject creatureModel = new GameObject("Creature");
@@ -33,6 +34,7 @@ public class CreatureGenerator : MonoBehaviour
         return creatureModel;
     }
 
+    // Method to initialize the variables based on the creature's DNA
     private void InitializeVariables(Creature creature)
     {
         bodyPrefab = GetPrefabByName(creature.dna.bodyShape);
@@ -52,6 +54,7 @@ public class CreatureGenerator : MonoBehaviour
         earNumber = creature.dna.earNumber;
     }
 
+    // Method to build the creature model by placing body, head, ears, and eyes
     private void CreateCreatureModel(Vector3 initialPosition, GameObject creatureModel)
     {
         // Body
@@ -80,6 +83,7 @@ public class CreatureGenerator : MonoBehaviour
         CreateEyes(eyePrefab, headPosition, creatureModel);
     }
 
+    // Method to create ears based on the number of ears and their positions
     private void CreateEars(GameObject prefab, Vector3 position, GameObject creatureModel)
     {
         var earOffset = new Vector3(headSize / 3, 0, 0);
@@ -103,6 +107,7 @@ public class CreatureGenerator : MonoBehaviour
         }
     }
 
+    // Method to instantiate a body part (body, head, ear, eye) and set its properties
     private GameObject CreateBodyPart(GameObject prefab, Vector3 position, float size, Color color, GameObject creatureModel, bool isBody = false)
     {
         GameObject body = Instantiate(prefab, position, Quaternion.identity);
@@ -112,6 +117,7 @@ public class CreatureGenerator : MonoBehaviour
         return body;
     }
 
+    // Method to create the eyes of the creature
     private void CreateEyes(GameObject eyePrefab, Vector3 headPosition, GameObject creatureModel)
     {
         // Left eye
@@ -127,6 +133,7 @@ public class CreatureGenerator : MonoBehaviour
         rightEye.transform.SetParent(creatureModel.transform);
     }
 
+    // Method to get the prefab corresponding to a shape
     private GameObject GetPrefabByName(Shape shapeName)
     {
         switch (shapeName)

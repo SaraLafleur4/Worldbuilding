@@ -15,6 +15,7 @@ public class Rocks : MonoBehaviour
     public Vector2 planeSize = new Vector2(500, 500);
     public Vector2 planePos = new Vector2(10, 10);
 
+    // Generates a specified number of rocks at random positions and rotations
     public void GenerateRocks()
     {
         ClearRocks();
@@ -25,6 +26,7 @@ public class Rocks : MonoBehaviour
         }
     }
 
+    // Generates a single rock at a random position and rotation
     void GenerateSingleRock()
     {
         // List of rock prefabs
@@ -56,6 +58,7 @@ public class Rocks : MonoBehaviour
         rocks.Add(rock);
     }
 
+    // Clears all existing rocks from the scene
     private void ClearRocks()
     {
         if (rocks != null)

@@ -24,12 +24,14 @@ public class PopulationManager : MonoBehaviour
 
     public bool DEBUG = false;
 
+    // Starts the breeding cycle by beginning a coroutine
     private void StartBreeding()
     {
         breedingCoroutine = StartCoroutine(BreedingCycle());
         Debug.Log("Breeding Started!");
     }
 
+    // Continuously breeds a new generation at fixed intervals
     private IEnumerator BreedingCycle()
     {
         while (true)
@@ -39,6 +41,7 @@ public class PopulationManager : MonoBehaviour
         }
     }
 
+    // Stops the breeding cycle coroutine and logs the result
     private void StopBreeding()
     {
         if (breedingCoroutine != null)
@@ -49,6 +52,7 @@ public class PopulationManager : MonoBehaviour
         }
     }
 
+    // Initializes the population and starts the breeding process
     public void Initialize()
     {
         population = new List<Creature>();
@@ -57,6 +61,7 @@ public class PopulationManager : MonoBehaviour
         StartBreeding();
     }
 
+    // Updates the population every frame, handling creature lifespans and stopping breeding if max population is reached
     private void Update()
     {
         if (!isInitialized) return;
@@ -78,6 +83,7 @@ public class PopulationManager : MonoBehaviour
         if (population.Count >= maxPopSize) StopBreeding();
     }
 
+    // Initializes the population with a specified number of creatures at random positions
     private void InitializePopulation()
     {
         for (int i = 0; i < initialPopSize; i++)
@@ -88,6 +94,7 @@ public class PopulationManager : MonoBehaviour
         }
     }
 
+    // Breeds a new generation of creatures by selecting parents and generating offspring
     private void BreedNewGeneration()
     {
         if (DEBUG) Debug.Log($"Breed! - current population size = {population.Count}");
@@ -126,18 +133,20 @@ public class PopulationManager : MonoBehaviour
         generation++;
     }
 
+    // Returns a list of creatures eligible to be parents, based on their remaining lifespan
     private List<Creature> GetPossibleParentsList()
     {
         List<Creature> possibleParents = new List<Creature>();
 
         foreach (var creature in population)
         {
-            if (creature.dna.timeToLive > 15) possibleParents.Add(creature);    // TODO: should depend on health
+            if (creature.dna.timeToLive > 15) possibleParents.Add(creature); // timeToLive depends on health
         }
 
         return possibleParents;
     }
 
+    // Selects a parent based on a weighted fitness system
     private Creature SelectParent(List<Creature> possibleParents)
     {
         List<int> weights = new List<int>();
@@ -188,6 +197,7 @@ public class PopulationManager : MonoBehaviour
         return possibleParents[possibleParents.Count - 1];
     }
 
+    // Combines the DNA of two parents, applies mutation, and creates a new creature
     private Creature Breed(DNA dna1, DNA dna2)
     {
         DNA offspringDNA = CombineDNA(dna1, dna2);
@@ -196,6 +206,7 @@ public class PopulationManager : MonoBehaviour
         return new Creature(offspringDNA, creatureGenerator);
     }
 
+    // Combines DNA from two parents, choosing genes randomly for the offspring
     private DNA CombineDNA(DNA parent1, DNA parent2)
     {
         DNA offspringDNA = new DNA();
@@ -210,20 +221,23 @@ public class PopulationManager : MonoBehaviour
         offspringDNA.earNumber = Random.Range(0, 10) < 5 ? parent1.earNumber : parent2.earNumber;
         // NO Crossover: random health and life span
         offspringDNA.health = Random.Range(80.0f, 100.0f);
+        offspringDNA.timeToLive = Mathf.Lerp(5f, 20f, offspringDNA.health / 100f); // proportional to health
         return offspringDNA;
     }
 
+    // Updates the health and opacity of a creature based on its health status
     private void UpdateCreatureHealthAndOpacity(Creature creature)
     {
         creature.dna.timeToLive -= (!creature.dna.isHealthy) ? 2 : 0;
 
+        // THIS PART DOES NOT WORK (opacity editing)
         var renderer = creature.model.GetComponent<Renderer>();
         if (renderer != null)
         {
-            Material material = renderer.material;
-            Color color = material.color;
+            Material creatureMaterial = creature.creatureMaterial;
+            Color color = creatureMaterial.color;
             color.a = creature.dna.health / 100f;
-            material.color = color;
+            creatureMaterial.color = color;
         }
     }
 }
